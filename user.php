@@ -1,18 +1,41 @@
 <?php
 session_start();
 
+if (!isset($_SESSION['user_id'])) {
+    
+    $_SESSION['flash_message'] = '
+        <div class="alert alert-danger alert-important" role="alert">
+            <div class="d-flex align-items-center">
+                <div class="me-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon me-0" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+                        <path d="M12 8v4" />
+                        <path d="M12 16h.01" />
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="alert-title mb-0">Harap login terlebih dahulu!</h4>
+                </div>
+            </div>
+        </div>';
+
+    header("Location: index.php");
+    exit;
+}
+
 // ============================================================
 //  KONFIGURASI DATABASE
 // ============================================================
-$host    = 'localhost';
-$db      = 'pemweb_db';
-$user    = 'root';
-$pass    = '';
+$host = 'localhost';
+$db = 'pemweb_db';
+$user = 'root';
+$pass = '';
 $charset = 'utf8mb4';
 
-$dsn     = "mysql:host=$host;dbname=$db;charset=$charset";
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 $options = [
-  PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+  PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
   PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
 ];
 
@@ -27,10 +50,10 @@ try {
 // ============================================================
 //  BACA PESAN FLASH DARI SESSION (hanya sekali, lalu hapus)
 // ============================================================
-$pesan  = '';
+$pesan = '';
 $jenisP = '';
 if (!empty($_SESSION['pesan'])) {
-  $pesan  = $_SESSION['pesan'];
+  $pesan = $_SESSION['pesan'];
   $jenisP = $_SESSION['jenisP'];
   unset($_SESSION['pesan'], $_SESSION['jenisP']);
 }
@@ -43,9 +66,9 @@ $aksi = $_REQUEST['aksi'] ?? '';
 
 // ---------- TAMBAH ----------
 if ($aksi === 'tambah' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-  $email    = trim($_POST['email']   ?? '');
-  $password = $_POST['password']     ?? '';
-  $prodi_id = !empty($_POST['prodi_id']) ? (int)$_POST['prodi_id'] : null;
+  $email = trim($_POST['email'] ?? '');
+  $password = $_POST['password'] ?? '';
+  $prodi_id = !empty($_POST['prodi_id']) ? (int) $_POST['prodi_id'] : null;
 
   if ($email === '' || $password === '') {
     $pesan = 'Email dan Password wajib diisi.';
@@ -58,12 +81,12 @@ if ($aksi === 'tambah' && $_SERVER['REQUEST_METHOD'] === 'POST') {
       $hash = password_hash($password, PASSWORD_DEFAULT);
       $stmt = $pdo->prepare("INSERT INTO user_tbl (email, password, prodi_id) VALUES (?, ?, ?)");
       $stmt->execute([$email, $hash, $prodi_id]);
-      $_SESSION['pesan']  = "User <b>$email</b> berhasil ditambahkan.";
+      $_SESSION['pesan'] = "User <b>$email</b> berhasil ditambahkan.";
       $_SESSION['jenisP'] = 'sukses';
       header("Location: user.php");
       exit;
     } catch (\PDOException $e) {
-      $pesan  = ($e->errorInfo[1] == 1062) ? 'Email sudah digunakan, gunakan email lain.' : 'Gagal menambahkan: ' . $e->getMessage();
+      $pesan = ($e->errorInfo[1] == 1062) ? 'Email sudah digunakan, gunakan email lain.' : 'Gagal menambahkan: ' . $e->getMessage();
       $jenisP = 'error';
     }
   }
@@ -71,10 +94,10 @@ if ($aksi === 'tambah' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // ---------- EDIT ----------
 if ($aksi === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
-  $userid   = (int)($_POST['userid'] ?? 0);
-  $email    = trim($_POST['email']   ?? '');
-  $password = $_POST['password']     ?? '';
-  $prodi_id = !empty($_POST['prodi_id']) ? (int)$_POST['prodi_id'] : null;
+  $userid = (int) ($_POST['userid'] ?? 0);
+  $email = trim($_POST['email'] ?? '');
+  $password = $_POST['password'] ?? '';
+  $prodi_id = !empty($_POST['prodi_id']) ? (int) $_POST['prodi_id'] : null;
 
   if ($email === '') {
     $pesan = 'Email wajib diisi.';
@@ -92,12 +115,12 @@ if ($aksi === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare("UPDATE user_tbl SET email=?, prodi_id=? WHERE userid=?");
         $stmt->execute([$email, $prodi_id, $userid]);
       }
-      $_SESSION['pesan']  = "User <b>$email</b> berhasil diperbarui.";
+      $_SESSION['pesan'] = "User <b>$email</b> berhasil diperbarui.";
       $_SESSION['jenisP'] = 'sukses';
       header("Location: user.php");
       exit;
     } catch (\PDOException $e) {
-      $pesan  = ($e->errorInfo[1] == 1062) ? 'Email sudah digunakan oleh user lain.' : 'Gagal memperbarui: ' . $e->getMessage();
+      $pesan = ($e->errorInfo[1] == 1062) ? 'Email sudah digunakan oleh user lain.' : 'Gagal memperbarui: ' . $e->getMessage();
       $jenisP = 'error';
     }
   }
@@ -106,10 +129,10 @@ if ($aksi === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // ---------- HAPUS ----------
 if ($aksi === 'hapus' && isset($_GET['userid'])) {
-  $userid = (int)$_GET['userid'];
-  $stmt   = $pdo->prepare("DELETE FROM user_tbl WHERE userid=?");
+  $userid = (int) $_GET['userid'];
+  $stmt = $pdo->prepare("DELETE FROM user_tbl WHERE userid=?");
   $stmt->execute([$userid]);
-  $_SESSION['pesan']  = 'User berhasil dihapus.';
+  $_SESSION['pesan'] = 'User berhasil dihapus.';
   $_SESSION['jenisP'] = 'sukses';
   header("Location: user.php");
   exit;
@@ -118,8 +141,8 @@ if ($aksi === 'hapus' && isset($_GET['userid'])) {
 // ---------- AMBIL DATA EDIT ----------
 $dataEdit = null;
 if ($aksi === 'form_edit' && isset($_GET['userid'])) {
-  $userid   = (int)$_GET['userid'];
-  $stmt     = $pdo->prepare("SELECT * FROM user_tbl WHERE userid=?");
+  $userid = (int) $_GET['userid'];
+  $stmt = $pdo->prepare("SELECT * FROM user_tbl WHERE userid=?");
   $stmt->execute([$userid]);
   $dataEdit = $stmt->fetch();
 }
@@ -156,7 +179,9 @@ $users = $stmt->fetchAll();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Manajemen User — Sistem Akademik</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
 
   <style>
     *,
@@ -783,10 +808,10 @@ $users = $stmt->fetchAll();
 
     <!-- FORM TAMBAH / EDIT -->
     <?php
-    $isEdit    = ($aksi === 'form_edit' && $dataEdit);
-    $formAksi  = $isEdit ? 'edit' : 'tambah';
+    $isEdit = ($aksi === 'form_edit' && $dataEdit);
+    $formAksi = $isEdit ? 'edit' : 'tambah';
     $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
-    $formIcon  = $isEdit ? '✏️' : ' ';
+    $formIcon = $isEdit ? '✏️' : ' ';
     ?>
     <div class="card">
       <div class="card-header">
@@ -800,17 +825,13 @@ $users = $stmt->fetchAll();
           <div class="form-group">
             <label>Alamat Email *</label>
             <input type="email" name="email" placeholder="email@domain.com"
-              value="<?= htmlspecialchars($dataEdit['email'] ?? '') ?>"
-              required
-              oninvalid="this.setCustomValidity('Email tidak boleh kosong!')"
-              oninput="this.setCustomValidity('')">
+              value="<?= htmlspecialchars($dataEdit['email'] ?? '') ?>" required
+              oninvalid="this.setCustomValidity('Email tidak boleh kosong!')" oninput="this.setCustomValidity('')">
           </div>
           <div class="form-group">
             <label>Password <?= $isEdit ? '(kosongkan jika tidak diubah)' : '*' ?></label>
-            <input type="password" name="password"
-              placeholder="<?= $isEdit ? '••••••••' : 'Masukkan password' ?>"
-              <?= !$isEdit ? 'required' : '' ?>
-              oninvalid="this.setCustomValidity('Password wajib diisi!')"
+            <input type="password" name="password" placeholder="<?= $isEdit ? '••••••••' : 'Masukkan password' ?>"
+              <?= !$isEdit ? 'required' : '' ?> oninvalid="this.setCustomValidity('Password wajib diisi!')"
               oninput="this.setCustomValidity('')">
             <?php if ($isEdit): ?>
               <div class="password-note">Biarkan kosong jika tidak ingin mengubah password</div>
@@ -821,8 +842,7 @@ $users = $stmt->fetchAll();
             <select name="prodi_id">
               <option value="">— Pilih Program Studi —</option>
               <?php foreach ($prodiList as $prodi): ?>
-                <option value="<?= $prodi['prodi_id'] ?>"
-                  <?= (($dataEdit['prodi_id'] ?? '') == $prodi['prodi_id']) ? 'selected' : '' ?>>
+                <option value="<?= $prodi['prodi_id'] ?>" <?= (($dataEdit['prodi_id'] ?? '') == $prodi['prodi_id']) ? 'selected' : '' ?>>
                   <?= htmlspecialchars($prodi['nama_prodi']) ?>
                 </option>
               <?php endforeach; ?>
@@ -849,13 +869,12 @@ $users = $stmt->fetchAll();
         </div>
         <form method="GET" action="user.php" style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;">
           <div class="search-wrap">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+              stroke-linecap="round" stroke-linejoin="round">
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.35-4.35" />
             </svg>
-            <input type="text" name="q" placeholder="Cari email / prodi…"
-              value="<?= htmlspecialchars($search) ?>">
+            <input type="text" name="q" placeholder="Cari email / prodi…" value="<?= htmlspecialchars($search) ?>">
           </div>
           <button type="submit" class="btn btn-secondary">Cari</button>
           <?php if ($search): ?>
@@ -869,8 +888,8 @@ $users = $stmt->fetchAll();
           <div class="empty-state">
             <div class="empty-icon">👤</div>
             <p><?= $search
-                  ? "Tidak ada user yang cocok dengan &ldquo;<b>$search</b>&rdquo;."
-                  : 'Belum ada user. Tambahkan user pertama di atas.' ?></p>
+              ? "Tidak ada user yang cocok dengan &ldquo;<b>$search</b>&rdquo;."
+              : 'Belum ada user. Tambahkan user pertama di atas.' ?></p>
           </div>
         <?php else: ?>
           <table>
@@ -901,8 +920,8 @@ $users = $stmt->fetchAll();
                   </td>
                   <td>
                     <div style="display:flex;gap:.4rem;">
-                      <a href="user.php?aksi=form_edit&userid=<?= $u['userid'] ?>"
-                        class="btn btn-icon btn-edit" title="Edit">✏️</a>
+                      <a href="user.php?aksi=form_edit&userid=<?= $u['userid'] ?>" class="btn btn-icon btn-edit"
+                        title="Edit">✏️</a>
                       <button class="btn btn-icon btn-del" title="Hapus"
                         onclick="konfirmHapus(<?= $u['userid'] ?>, '<?= htmlspecialchars(addslashes($u['email'])) ?>')">
                         🗑️
@@ -934,15 +953,15 @@ $users = $stmt->fetchAll();
 
   <script>
     // === AUTO HIDE NOTIFICATION (muncul dari atas, hilang ke atas) ===
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       const alertBox = document.getElementById('alertBox');
       if (alertBox) {
         // Auto hide after 3 seconds
-        setTimeout(function() {
+        setTimeout(function () {
 
           alertBox.classList.add('hiding');
 
-          setTimeout(function() {
+          setTimeout(function () {
             if (alertBox && alertBox.remove) {
               alertBox.remove();
             }
@@ -956,7 +975,7 @@ $users = $stmt->fetchAll();
       const alertBox = button.closest('.alert');
       if (alertBox) {
         alertBox.classList.add('hiding');
-        setTimeout(function() {
+        setTimeout(function () {
           if (alertBox && alertBox.remove) {
             alertBox.remove();
           }
@@ -978,15 +997,15 @@ $users = $stmt->fetchAll();
 
     const overlay = document.getElementById('confirmOverlay');
     if (overlay) {
-      overlay.addEventListener('click', function(e) {
+      overlay.addEventListener('click', function (e) {
         if (e.target === this) tutupKonfirmasi();
       });
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       const closeButtons = document.querySelectorAll('.alert-close');
       closeButtons.forEach(btn => {
-        btn.onclick = function() {
+        btn.onclick = function () {
           tutupAlertManually(this);
         };
       });
