@@ -1,6 +1,8 @@
 <?php
 session_start();
 
+require_once __DIR__ . '/config.php';
+
 if (!isset($_SESSION['user_id'])) {
     
     $_SESSION['flash_message'] = '
@@ -24,23 +26,8 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-// ============================================================
-//  KONFIGURASI DATABASE
-// ============================================================
-$host = 'localhost';
-$db = 'pemweb_db';
-$user = 'root';
-$pass = '';
-$charset = 'utf8mb4';
-
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-$options = [
-  PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-  PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-];
-
 try {
-  $pdo = new PDO($dsn, $user, $pass, $options);
+  $pdo = db_connect();
 } catch (\PDOException $e) {
   die('<div style="padding:2rem;font-family:monospace;color:#e74c3c;">
         <b>Koneksi database gagal:</b><br>' . htmlspecialchars($e->getMessage()) . '
