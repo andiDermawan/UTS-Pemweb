@@ -1,10 +1,7 @@
 <?php
 session_start();
 
-$db_host = 'localhost';
-$db_name = 'pemweb_db';
-$db_user = 'root';
-$db_pass = 'Qwerty12!';
+require_once __DIR__ . '/config.php';
 
 $error_message = '';
 
@@ -16,8 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error_message = "Email dan password wajib diisi!";
     } else {
         try {
-            $pdo = new PDO("mysql:host=$db_host;dbname=$db_name", $db_user, $db_pass);
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $pdo = db_connect();
 
             $statement = $pdo->prepare("SELECT * FROM user_tbl WHERE email = :email");
             $statement->bindParam(':email', $email);
@@ -55,12 +51,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             font-family: 'Inter', sans-serif;
         }
 
-        /* Custom background untuk panel kanan agar persis seperti referensi */
         .bg-gradient-custom {
             background: linear-gradient(135deg, #7c5cff, #5a3ce8) !important;
         }
 
-        /* Kustomisasi warna primary button agar senada dengan tema */
         .btn-primary {
             background-color: #684fff;
             border-color: #684fff;
@@ -76,7 +70,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body class="d-flex flex-column bg-white">
     <div class="row g-0 flex-fill vh-100">
 
-        <!-- --- LEFT PANEL (LOGIN FORM) --- -->
         <div class="col-12 col-lg-6 col-xl-5 border-top-wide border-primary d-flex flex-column justify-content-center">
             <div class="container container-tight my-5 px-lg-5">
                 <div class="mb-4">
