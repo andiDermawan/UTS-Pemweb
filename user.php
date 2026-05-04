@@ -1,9 +1,6 @@
 <?php
 session_start();
 
-// ============================================================
-//  KONFIGURASI DATABASE
-// ============================================================
 $host    = 'localhost';
 $db      = 'pemweb_db';
 $user    = 'root';
@@ -24,9 +21,6 @@ try {
     </div>');
 }
 
-// ============================================================
-//  BACA PESAN FLASH DARI SESSION
-// ============================================================
 $pesan  = '';
 $jenisP = '';
 if (!empty($_SESSION['pesan'])) {
@@ -37,9 +31,6 @@ if (!empty($_SESSION['pesan'])) {
 
 $aksi = $_REQUEST['aksi'] ?? '';
 
-// ============================================================
-//  PROSES AKSI CRUD
-// ============================================================
 
 // ---------- TAMBAH ----------
 if ($aksi === 'tambah' && $_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -124,10 +115,8 @@ if ($aksi === 'form_edit' && isset($_GET['userid'])) {
   $dataEdit = $stmt->fetch();
 }
 
-// ---------- DROPDOWN PRODI ----------
 $prodiList = $pdo->query("SELECT prodi_id, nama_prodi FROM prodi_tbl ORDER BY nama_prodi")->fetchAll();
 
-// ---------- DAFTAR USER ----------
 $search = trim($_GET['q'] ?? '');
 if ($search !== '') {
   $stmt = $pdo->prepare("
@@ -148,7 +137,6 @@ if ($search !== '') {
 }
 $users = $stmt->fetchAll();
 
-// ---------- HELPER ----------
 $isEdit    = ($aksi === 'form_edit' && $dataEdit);
 $formAksi  = $isEdit ? 'edit' : 'tambah';
 $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
@@ -187,7 +175,6 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
 <body class="antialiased">
 <div class="wrapper">
 
-  <!-- ===================== NAVBAR ===================== -->
   <header class="navbar navbar-expand-md navbar-dark bg-blue sticky-top d-print-none">
     <div class="container-xl">
       <!-- Brand -->
@@ -211,10 +198,8 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
     </div>
   </header>
 
-  <!-- ===================== PAGE WRAPPER ===================== -->
   <div class="page-wrapper">
 
-    <!-- Page header -->
     <div class="page-header d-print-none">
       <div class="container-xl">
         <div class="row g-2 align-items-center">
@@ -226,11 +211,9 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
       </div>
     </div>
 
-    <!-- Page body -->
     <div class="page-body">
       <div class="container-xl">
 
-        <!-- ===== ALERT FLASH ===== -->
         <?php if ($pesan): ?>
           <div class="alert alert-<?= $jenisP === 'sukses' ? 'success' : 'danger' ?> alert-dismissible mb-4" role="alert" id="flashAlert">
             <div class="d-flex align-items-center gap-2">
@@ -241,7 +224,6 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
           </div>
         <?php endif; ?>
 
-        <!-- ===== FORM TAMBAH / EDIT ===== -->
         <div class="card mb-4">
           <div class="card-header">
             <h3 class="card-title">
@@ -256,7 +238,6 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
               <?php endif; ?>
 
               <div class="row g-3">
-                <!-- Email -->
                 <div class="col-md-4">
                   <label class="form-label required">Alamat Email</label>
                   <div class="input-group">
@@ -270,7 +251,6 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
                   </div>
                 </div>
 
-                <!-- Password -->
                 <div class="col-md-4">
                   <label class="form-label <?= !$isEdit ? 'required' : '' ?>">
                     Password
@@ -327,7 +307,6 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
             <h3 class="card-title mb-0">
               <i class="ti ti-users me-2 text-blue"></i>Daftar User
             </h3>
-            <!-- Search -->
             <form method="GET" action="user.php" class="d-flex align-items-center gap-2 flex-wrap">
               <div class="input-group input-group-sm" style="min-width:220px">
                 <span class="input-group-text"><i class="ti ti-search"></i></span>
