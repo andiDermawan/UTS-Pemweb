@@ -4,7 +4,7 @@ session_start();
 $db_host = 'localhost';
 $db_name = 'pemweb_db';
 $db_user = 'root';
-$db_pass = 'Qwerty12!';
+$db_pass = '';
 
 $error_message = '';
 
