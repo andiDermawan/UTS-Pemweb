@@ -179,6 +179,11 @@ $counts = array_map(function ($r) {
                                 <i class="ti ti-chart-bar me-2"></i>Dashboard
                             </h2>
                         </div>
+                        <div class="col-auto ms-auto d-print-none">
+                            <a href="logout.php" class="btn btn-danger">
+                                <i class="ti ti-logout me-1"></i>Logout
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -248,12 +253,15 @@ $counts = array_map(function ($r) {
                 </div>
             </div>
 
-            <!-- Footer -->
             <footer class="footer footer-transparent d-print-none">
                 <div class="container-xl">
                     <div class="row text-center align-items-center">
                         <div class="col-12 col-lg-auto mt-3 mt-lg-0 text-muted small">
                             Sistem Akademik &copy; <?= date('Y') ?>
+                        </div>
+                        <div class="col-12 col-lg-auto ms-lg-auto mt-2 mt-lg-0 text-muted small">
+                            <div>Built with Tabler (https://tabler.io)</div>
+                            <div>License: MIT</div>
                         </div>
                     </div>
                 </div>
@@ -261,9 +269,7 @@ $counts = array_map(function ($r) {
         </div>
     </div>
 
-    <!-- Chart.js library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <!-- Tabler JS -->
     <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js"></script>
 
     <script>

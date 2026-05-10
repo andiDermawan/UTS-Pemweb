@@ -207,6 +207,11 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
             <div class="page-pretitle">Akademik</div>
             <h2 class="page-title">Manajemen User</h2>
           </div>
+          <div class="col-auto ms-auto d-print-none">
+            <a href="logout.php" class="btn btn-danger">
+              <i class="ti ti-logout me-1"></i>Logout
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -414,12 +419,15 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
       </div><!-- /container -->
     </div><!-- /page-body -->
 
-    <!-- Footer -->
     <footer class="footer footer-transparent d-print-none">
       <div class="container-xl">
         <div class="row text-center align-items-center">
           <div class="col-12 col-lg-auto mt-3 mt-lg-0 text-muted small">
             Sistem Akademik &copy; <?= date('Y') ?>
+          </div>
+          <div class="col-12 col-lg-auto ms-lg-auto mt-2 mt-lg-0 text-muted small">
+            <div>Built with Tabler (https://tabler.io)</div>
+            <div>License: MIT</div>
           </div>
         </div>
       </div>

@@ -45,85 +45,77 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Login - Sistem Akademik</title>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Tabler CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/css/tabler.min.css" />
     <style>
+        :root {
+            --login-accent: #206bc4;
+            --login-bg: #f6f8fc;
+            --login-glow: rgba(32, 107, 196, 0.16);
+            --login-glow-2: rgba(45, 206, 137, 0.12);
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
-        }
-
-        /* Custom background untuk panel kanan agar persis seperti referensi */
-        .bg-gradient-custom {
-            background: linear-gradient(135deg, #7c5cff, #5a3ce8) !important;
-        }
-
-        /* Kustomisasi warna primary button agar senada dengan tema */
-        .btn-primary {
-            background-color: #684fff;
-            border-color: #684fff;
-        }
-
-        .btn-primary:hover {
-            background-color: #563be8;
-            border-color: #563be8;
+            font-family: 'Manrope', sans-serif;
+            background-color: var(--login-bg);
+            background-image:
+                radial-gradient(600px 420px at 12% -10%, var(--login-glow), transparent 60%),
+                radial-gradient(720px 480px at 110% 0%, var(--login-glow-2), transparent 55%);
         }
     </style>
 </head>
 
-<body class="d-flex flex-column bg-white">
-    <div class="row g-0 flex-fill vh-100">
+<body class="d-flex flex-column">
+    <div class="page page-center">
+        <div class="container container-tight py-4">
+            <?php
+            if (isset($_SESSION['flash_message'])) {
+                echo $_SESSION['flash_message'];
 
-        <!-- --- LEFT PANEL (LOGIN FORM) --- -->
-        <div class="col-12 col-lg-6 col-xl-5 border-top-wide border-primary d-flex flex-column justify-content-center">
-            <div class="container container-tight my-5 px-lg-5">
-                <div class="mb-4">
-                    <h2 class="h1 fw-bold text-dark">Login</h2>
-                    <p class="text-muted mb-4">Silakan masuk ke akun Anda untuk melanjutkan.</p>
-                </div>
+                unset($_SESSION['flash_message']);
+            }
+            ?>
 
-                <?php
-                if (isset($_SESSION['flash_message'])) {
-                    echo $_SESSION['flash_message'];
-
-                    unset($_SESSION['flash_message']);
-                }
-                ?>
-
-                <?php if (!empty($error_message)): ?>
-                    <div class="alert alert-danger alert-important" role="alert">
-                        <div class="d-flex">
-                            <div>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24"
-                                    viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
-                                    <path d="M12 8v4" />
-                                    <path d="M12 16h.01" />
-                                </svg>
-                            </div>
-                            <div>
-                                <?php echo $error_message; ?>
-                            </div>
+            <?php if (!empty($error_message)): ?>
+                <div class="alert alert-danger alert-important" role="alert">
+                    <div class="d-flex">
+                        <div>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24"
+                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+                                <path d="M12 8v4" />
+                                <path d="M12 16h.01" />
+                            </svg>
+                        </div>
+                        <div>
+                            <?php echo $error_message; ?>
                         </div>
                     </div>
-                <?php endif; ?>
+                </div>
+            <?php endif; ?>
 
-                <form method="POST" action="">
+            <form class="card card-md" method="POST" action="">
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <h1 class="h2 fw-bold mb-1">Sistem Akademik</h1>
+                        <p class="text-muted mb-0">Silakan login untuk melanjutkan</p>
+                    </div>
                     <div class="mb-3">
-                        <label class="form-label fw-semibold" for="email">Email</label>
+                        <label class="form-label" for="email">Email</label>
                         <input type="email" class="form-control" id="email" name="email" placeholder="mail@website.com"
                             required autocomplete="off">
                     </div>
 
-                    <div class="mb-4">
-                        <label class="form-label fw-semibold" for="password">
+                    <div class="mb-2">
+                        <label class="form-label" for="password">
                             Password
                             <span class="form-label-description">
-                                <a href="#" style="color: #684fff;">Lupa sandi?</a>
+                                <a href="#" class="link-secondary">Lupa sandi?</a>
                             </span>
                         </label>
                         <input type="password" class="form-control" id="password" name="password"
@@ -131,24 +123,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
 
                     <div class="form-footer">
-                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">Login</button>
+                        <button type="submit" class="btn btn-primary w-100">Login</button>
                     </div>
-                </form>
-
-                <div class="text-center text-muted mt-4">
-                    Belum memiliki akun? <a href="#" tabindex="-1" style="color: #684fff; font-weight: 600;">Buat
-                        akun</a>
                 </div>
-            </div>
+            </form>
         </div>
-
-        <div
-            class="col-12 col-lg-6 col-xl-7 d-none d-lg-flex bg-gradient-custom text-white justify-content-center align-items-center">
-            <div class="text-center px-5 max-w-sm">
-                <h2 class="display-5 fw-bold mb-3">Welcome</h2>
-            </div>
-        </div>
-
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js"></script>
