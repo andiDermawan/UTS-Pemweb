@@ -140,6 +140,8 @@ $users = $stmt->fetchAll();
 $isEdit    = ($aksi === 'form_edit' && $dataEdit);
 $formAksi  = $isEdit ? 'edit' : 'tambah';
 $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
+
+$currentPage = 'user';
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -148,13 +150,10 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Manajemen User — Sistem Akademik</title>
 
-  <!-- Tabler CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/css/tabler.min.css">
-  <!-- Tabler Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css">
 
   <style>
-    /* Sedikit penyesuaian di atas Tabler */
     .navbar-brand-text {
       font-weight: 700;
       font-size: 1rem;
@@ -163,12 +162,25 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
       font-size: .75rem;
       font-weight: 700;
     }
-    /* Alert animasi */
     @keyframes slideDown {
       from { opacity: 0; transform: translateY(-8px); }
       to   { opacity: 1; transform: translateY(0); }
     }
     .alert { animation: slideDown .3s ease; }
+
+    .navbar-nav .nav-link {
+      color: rgba(255,255,255,0.75) !important;
+      transition: color .2s;
+      padding: 0.5rem 0.75rem;
+    }
+    .navbar-nav .nav-link:hover {
+      color: #fff !important;
+    }
+    .navbar-nav .nav-link.active {
+      color: #fff !important;
+      font-weight: 600;
+      border-bottom: 2px solid rgba(255,255,255,0.85);
+    }
   </style>
 </head>
 
@@ -177,11 +189,11 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
 
   <header class="navbar navbar-expand-md navbar-dark bg-blue sticky-top d-print-none">
     <div class="container-xl">
+
       <!-- Brand -->
-      <a href="#" class="navbar-brand d-flex align-items-center gap-2">
+      <a href="lamanUtama.php" class="navbar-brand d-flex align-items-center gap-2">
         <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-school" width="28" height="28"
-          viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
-          stroke-linejoin="round">
+            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
           <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
           <path d="M22 9l-10 -4l-10 4l10 4l10 -4v6"/>
           <path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4"/>
@@ -189,12 +201,39 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
         <span class="navbar-brand-text">Sistem Akademik</span>
       </a>
 
-      <!-- Right side -->
-      <div class="ms-auto d-flex align-items-center gap-2">
-        <span class="badge bg-white text-blue fw-bold px-3 py-2">
-          <i class="ti ti-users me-1"></i><?= count($users) ?> User
-        </span>
+      <!-- Hamburger (mobile) -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu"
+        aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Nav links -->
+      <div class="collapse navbar-collapse" id="navbarMenu">
+        <ul class="navbar-nav ms-auto d-flex align-items-md-center">
+          <li class="nav-item">
+            <a href="dashboard.php" class="nav-link d-flex align-items-center gap-1 <?= $currentPage === 'dashboard' ? 'active' : '' ?>">
+              <i class="ti ti-layout-dashboard"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="profile.php" class="nav-link d-flex align-items-center gap-1 <?= $currentPage === 'profile' ? 'active' : '' ?>">
+              <i class="ti ti-user-circle"></i> Profile
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="prodi.php" class="nav-link d-flex align-items-center gap-1 <?= $currentPage === 'prodi' ? 'active' : '' ?>">
+              <i class="ti ti-building-community"></i> Program Studi
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="user.php" class="nav-link d-flex align-items-center gap-1 <?= $currentPage === 'user' ? 'active' : '' ?>">
+              <i class="ti ti-users"></i> User
+              <span class="badge bg-white text-blue fw-bold ms-1"><?= count($users) ?></span>
+            </a>
+          </li>
+        </ul>
       </div>
+
     </div>
   </header>
 
@@ -224,6 +263,7 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
           </div>
         <?php endif; ?>
 
+        <!-- Form Tambah / Edit -->
         <div class="card mb-4">
           <div class="card-header">
             <h3 class="card-title">
@@ -268,7 +308,6 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
                   </div>
                 </div>
 
-                <!-- Program Studi -->
                 <div class="col-md-4">
                   <label class="form-label">Program Studi</label>
                   <div class="input-group">
@@ -284,7 +323,7 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
                     </select>
                   </div>
                 </div>
-              </div><!-- /row -->
+              </div>
 
               <div class="mt-3 d-flex gap-2">
                 <button type="submit" class="btn btn-primary">
@@ -299,9 +338,9 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
               </div>
             </form>
           </div>
-        </div><!-- /card form -->
+        </div>
 
-        <!-- ===== TABEL DAFTAR USER ===== -->
+        <!-- Tabel User -->
         <div class="card">
           <div class="card-header d-flex align-items-center justify-content-between flex-wrap gap-2">
             <h3 class="card-title mb-0">
@@ -356,7 +395,7 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
                   </tr>
                 </thead>
                 <tbody>
-                  <?php foreach ($users as $no => $u): 
+                  <?php foreach ($users as $no => $u):
                     $colors = ['bg-blue', 'bg-azure', 'bg-indigo', 'bg-purple', 'bg-pink', 'bg-red', 'bg-orange', 'bg-teal', 'bg-green', 'bg-cyan'];
                     $avatarColor = $colors[$no % count($colors)];
                     $initial = strtoupper(substr($u['email'], 0, 1));
@@ -401,7 +440,6 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
                 </tbody>
               </table>
             </div>
-            <!-- Footer tabel -->
             <div class="card-footer d-flex align-items-center justify-content-between">
               <p class="m-0 text-muted small">
                 Menampilkan <strong><?= count($users) ?></strong> user
@@ -409,12 +447,11 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
               </p>
             </div>
           <?php endif; ?>
-        </div><!-- /card tabel -->
+        </div>
 
-      </div><!-- /container -->
-    </div><!-- /page-body -->
+      </div>
+    </div>
 
-    <!-- Footer -->
     <footer class="footer footer-transparent d-print-none">
       <div class="container-xl">
         <div class="row text-center align-items-center">
@@ -428,7 +465,7 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
   </div>
 </div>
 
-
+<!-- Modal Konfirmasi Hapus -->
 <div class="modal modal-blur fade" id="confirmModal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
     <div class="modal-content">
@@ -453,9 +490,7 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
   </div>
 </div>
 
-
 <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js"></script>
-
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const flashAlert = document.getElementById('flashAlert');
@@ -472,7 +507,6 @@ $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
       'Hapus user <strong>' + email + '</strong>?<br>' +
       '<small class="text-muted">Tindakan ini tidak dapat dibatalkan.</small>';
     document.getElementById('confirmBtn').href = 'user.php?aksi=hapus&userid=' + userid;
-
     const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
     modal.show();
   }
