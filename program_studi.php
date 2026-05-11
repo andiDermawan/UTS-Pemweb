@@ -411,7 +411,7 @@ $prodis = $stmt->fetchAll();
                                     <label class="form-label required">Nama Program Studi</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="ti ti-building-community"></i></span>
-                                        <input type="text" name="nama_prodi" class="form-control" placeholder="Contoh: Teknik Elektro" required>
+                                        <input type="text" name="nama_prodi" class="form-control" placeholder="Contoh: Ilmu Komputer" required>
                                     </div>
                                 </div>
                                 <div class="col-md-3 d-flex align-items-end">
