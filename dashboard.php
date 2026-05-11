@@ -23,15 +23,15 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 // Database connection (PDO)
-$host    = 'localhost';
-$db      = 'pemweb_db';
-$user    = 'root';
-$pass    = '';
+$host = 'localhost';
+$db = 'pemweb_db';
+$user = 'root';
+$pass = '';
 $charset = 'utf8mb4';
 
-$dsn     = "mysql:host=$host;dbname=$db;charset=$charset";
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
 $options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
 ];
 
@@ -44,8 +44,8 @@ try {
 }
 
 // Fetch statistics
-$totalProdi = (int)$pdo->query("SELECT COUNT(*) FROM prodi_tbl")->fetchColumn();
-$totalUser  = (int)$pdo->query("SELECT COUNT(*) FROM user_tbl")->fetchColumn();
+$totalProdi = (int) $pdo->query("SELECT COUNT(*) FROM prodi_tbl")->fetchColumn();
+$totalUser = (int) $pdo->query("SELECT COUNT(*) FROM user_tbl")->fetchColumn();
 
 $stmt = $pdo->query("SELECT p.nama_prodi, COUNT(u.userid) AS jumlah
                       FROM prodi_tbl p
@@ -56,7 +56,7 @@ $perProdi = $stmt->fetchAll();
 
 $labels = array_column($perProdi, 'nama_prodi');
 $counts = array_map(function ($r) {
-    return (int)$r['jumlah'];
+    return (int) $r['jumlah'];
 }, $perProdi);
 
 ?>
@@ -74,6 +74,18 @@ $counts = array_map(function ($r) {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css">
 
     <style>
+        html, body {
+            height: 100%;
+        }
+        .wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .page-wrapper {
+            flex: 1;
+        }
+
         /* Sedikit penyesuaian di atas Tabler */
         .navbar-brand-text {
             font-weight: 700;
@@ -139,9 +151,9 @@ $counts = array_map(function ($r) {
             <div class="container-xl">
                 <!-- Brand -->
                 <a href="dashboard.php" class="navbar-brand d-flex align-items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-school" width="28" height="28"
-                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
-                        stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-school" width="28"
+                        height="28" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
                         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                         <path d="M22 9l-10 -4l-10 4l10 4l10 -4v6" />
                         <path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4" />
@@ -164,6 +176,9 @@ $counts = array_map(function ($r) {
                         <a class="nav-link text-white" href="user.php" title="User">
                             <i class="ti ti-users me-1"></i>User
                         </a>
+                        <a href="logout.php" class="btn btn-outline ms-4">
+                            <i class="ti ti-logout me-1"></i>Logout
+                        </a>
                     </nav>
                 </div>
             </div>
@@ -178,11 +193,6 @@ $counts = array_map(function ($r) {
                             <h2 class="page-title">
                                 <i class="ti ti-chart-bar me-2"></i>Dashboard
                             </h2>
-                        </div>
-                        <div class="col-auto ms-auto d-print-none">
-                            <a href="logout.php" class="btn btn-danger">
-                                <i class="ti ti-logout me-1"></i>Logout
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -244,7 +254,8 @@ $counts = array_map(function ($r) {
                                     </div>
                                 </div>
                                 <div class="card-footer text-muted text-center small">
-                                    <i class="ti ti-info-circle me-1"></i>Data jumlah user yang terdaftar di setiap program studi
+                                    <i class="ti ti-info-circle me-1"></i>Data jumlah user yang terdaftar di setiap
+                                    program studi
                                 </div>
                             </div>
                         </div>
@@ -253,16 +264,14 @@ $counts = array_map(function ($r) {
                 </div>
             </div>
 
-            <footer class="footer footer-transparent d-print-none">
-                <div class="container-xl">
-                    <div class="row text-center align-items-center">
-                        <div class="col-12 col-lg-auto mt-3 mt-lg-0 text-muted small">
-                            Sistem Akademik &copy; <?= date('Y') ?>
-                        </div>
-                        <div class="col-12 col-lg-auto ms-lg-auto mt-2 mt-lg-0 text-muted small">
-                            <div>Built with Tabler (https://tabler.io)</div>
-                            <div>License: MIT</div>
-                        </div>
+            <footer class="footer d-print-none bg-blue text-white border-top border-blue py-2" style="min-height: auto; margin-top: auto;">
+                <div class="container-xl d-flex align-items-center justify-content-center" style="min-height: 50px;">
+                    <div class="text-center small">
+                        <span class="text-white fw-semibold">Sistem Akademik &copy; 2026</span>
+                        <span class="text-white-50 ms-3 me-3">•</span>
+                        <span class="text-white-50">Built with Tabler (https://tabler.io)</span>
+                        <span class="text-white-50 ms-3 me-3">•</span>
+                        <span class="text-white-50">License: MIT</span>
                     </div>
                 </div>
             </footer>
@@ -273,7 +282,7 @@ $counts = array_map(function ($r) {
     <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const labels = <?= json_encode($labels, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
             const data = <?= json_encode($counts) ?>;
 
