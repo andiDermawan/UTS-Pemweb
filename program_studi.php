@@ -23,6 +23,242 @@ if (!isset($_SESSION['user_id'])) {
     header("Location: index.php");
     exit;
 }
+
+// Database connection
+$host = 'localhost';
+$db = 'pemweb_db';
+$user = 'root';
+$pass = '';
+$charset = 'utf8mb4';
+
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$options = [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+];
+
+try {
+    $pdo = new PDO($dsn, $user, $pass, $options);
+} catch (\PDOException $e) {
+    die('<div style="padding:2rem;font-family:monospace;color:#e74c3c;">
+        <b>Koneksi database gagal:</b><br>' . htmlspecialchars($e->getMessage()) . '
+    </div>');
+}
+
+// Handle add prodi dengan Post-Redirect-Get pattern
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    if ($_POST['action'] === 'add') {
+        $nama_prodi = trim($_POST['nama_prodi'] ?? '');
+        
+        if (empty($nama_prodi)) {
+            $_SESSION['flash_message'] = '<div class="alert alert-warning alert-dismissible mb-4" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="ti ti-alert-circle me-2"></i>
+                    <div>Nama program studi tidak boleh kosong!</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>';
+            header("Location: program_studi.php");
+            exit;
+        } else {
+            try {
+                // Check if prodi with same name already exists
+                $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM prodi_tbl WHERE LOWER(nama_prodi) = LOWER(?)");
+                $checkStmt->execute([$nama_prodi]);
+                $exists = (int)$checkStmt->fetchColumn();
+                
+                if ($exists > 0) {
+                    $_SESSION['flash_message'] = '<div class="alert alert-danger alert-dismissible mb-4" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="ti ti-alert-circle me-2"></i>
+                            <div>Gagal menambahkan program studi! (Mungkin duplikat)</div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>';
+                    header("Location: program_studi.php");
+                    exit;
+                }
+                
+                $stmt = $pdo->prepare("INSERT INTO prodi_tbl (nama_prodi) VALUES (?)");
+                $stmt->execute([$nama_prodi]);
+                $_SESSION['flash_message'] = '<div class="alert alert-success alert-dismissible mb-4" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="ti ti-circle-check me-2"></i>
+                        <div>Program studi berhasil ditambahkan!</div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>';
+                header("Location: program_studi.php");
+                exit;
+            } catch (PDOException $e) {
+                $_SESSION['flash_message'] = '<div class="alert alert-danger alert-dismissible mb-4" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="ti ti-alert-circle me-2"></i>
+                        <div>Gagal menambahkan program studi! (Mungkin duplikat)</div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>';
+                header("Location: program_studi.php");
+                exit;
+            }
+        }
+    } elseif ($_POST['action'] === 'delete') {
+        $prodi_id = (int)($_POST['prodi_id'] ?? 0);
+        
+        if ($prodi_id > 0) {
+            try {
+                // Check if there are users in this prodi
+                $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_tbl WHERE prodi_id = ?");
+                $stmt->execute([$prodi_id]);
+                $count = (int)$stmt->fetchColumn();
+                
+                if ($count > 0) {
+                    $_SESSION['flash_message'] = '<div class="alert alert-danger alert-dismissible mb-4" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="ti ti-alert-circle me-2"></i>
+                            <div>Tidak bisa menghapus! Program studi ini masih memiliki ' . $count . ' user/mahasiswa.</div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>';
+                } else {
+                    $stmt = $pdo->prepare("DELETE FROM prodi_tbl WHERE prodi_id = ?");
+                    $stmt->execute([$prodi_id]);
+                    
+                    // Reset AUTO_INCREMENT ke max ID + 1
+                    $maxIdStmt = $pdo->query("SELECT MAX(prodi_id) FROM prodi_tbl");
+                    $maxId = (int)$maxIdStmt->fetchColumn();
+                    $nextId = max($maxId + 1, 1); // Minimal 1 jika table kosong
+                    $pdo->exec("ALTER TABLE prodi_tbl AUTO_INCREMENT = $nextId");
+                    
+                    $_SESSION['flash_message'] = '<div class="alert alert-success alert-dismissible mb-4" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="ti ti-circle-check me-2"></i>
+                            <div>Program studi berhasil dihapus!</div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>';
+                }
+                header("Location: program_studi.php");
+                exit;
+            } catch (PDOException $e) {
+                $_SESSION['flash_message'] = '<div class="alert alert-danger alert-dismissible mb-4" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="ti ti-alert-circle me-2"></i>
+                        <div>Gagal menghapus program studi!</div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>';
+                header("Location: program_studi.php");
+                exit;
+            }
+        }
+    } elseif ($_POST['action'] === 'update') {
+        $prodi_id = (int)($_POST['prodi_id'] ?? 0);
+        $nama_prodi = trim($_POST['nama_prodi'] ?? '');
+        
+        if ($prodi_id <= 0 || empty($nama_prodi)) {
+            $_SESSION['flash_message'] = '<div class="alert alert-warning alert-dismissible mb-4" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="ti ti-alert-circle me-2"></i>
+                    <div>Nama program studi tidak boleh kosong!</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>';
+            header("Location: program_studi.php");
+            exit;
+        }
+        
+        try {
+            // Get current name
+            $currentStmt = $pdo->prepare("SELECT nama_prodi FROM prodi_tbl WHERE prodi_id = ?");
+            $currentStmt->execute([$prodi_id]);
+            $current = $currentStmt->fetch();
+            
+            if (!$current) {
+                $_SESSION['flash_message'] = '<div class="alert alert-danger alert-dismissible mb-4" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="ti ti-alert-circle me-2"></i>
+                        <div>Program studi tidak ditemukan!</div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>';
+                header("Location: program_studi.php");
+                exit;
+            }
+            
+            // If name hasn't changed, just redirect
+            if (strtolower($current['nama_prodi']) === strtolower($nama_prodi)) {
+                $_SESSION['flash_message'] = '<div class="alert alert-success alert-dismissible mb-4" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="ti ti-circle-check me-2"></i>
+                        <div>Program studi berhasil diperbarui!</div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>';
+                header("Location: program_studi.php");
+                exit;
+            }
+            
+            // Check if new name already exists (case-insensitive)
+            $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM prodi_tbl WHERE LOWER(nama_prodi) = LOWER(?) AND prodi_id != ?");
+            $checkStmt->execute([$nama_prodi, $prodi_id]);
+            $exists = (int)$checkStmt->fetchColumn();
+            
+            if ($exists > 0) {
+                $_SESSION['flash_message'] = '<div class="alert alert-danger alert-dismissible mb-4" role="alert">
+                    <div class="d-flex align-items-center">
+                        <i class="ti ti-alert-circle me-2"></i>
+                        <div>Gagal menambahkan program studi! (Mungkin duplikat)</div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>';
+                header("Location: program_studi.php");
+                exit;
+            }
+            
+            // Update prodi
+            $updateStmt = $pdo->prepare("UPDATE prodi_tbl SET nama_prodi = ? WHERE prodi_id = ?");
+            $updateStmt->execute([$nama_prodi, $prodi_id]);
+            
+            $_SESSION['flash_message'] = '<div class="alert alert-success alert-dismissible mb-4" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="ti ti-circle-check me-2"></i>
+                    <div>Program studi berhasil diperbarui!</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>';
+            header("Location: program_studi.php");
+            exit;
+        } catch (PDOException $e) {
+            $_SESSION['flash_message'] = '<div class="alert alert-danger alert-dismissible mb-4" role="alert">
+                <div class="d-flex align-items-center">
+                    <i class="ti ti-alert-circle me-2"></i>
+                    <div>Gagal memperbarui program studi!</div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>';
+            header("Location: program_studi.php");
+            exit;
+        }
+    }
+}
+
+// Display flash message from session
+$flash_message = '';
+if (isset($_SESSION['flash_message'])) {
+    $flash_message = $_SESSION['flash_message'];
+    unset($_SESSION['flash_message']);
+}
+
+// Fetch all prodi with user count
+$stmt = $pdo->query("
+    SELECT p.prodi_id, p.nama_prodi, COUNT(u.userid) as jumlah_user
+    FROM prodi_tbl p
+    LEFT JOIN user_tbl u ON p.prodi_id = u.prodi_id
+    GROUP BY p.prodi_id, p.nama_prodi
+    ORDER BY p.nama_prodi ASC
+");
+$prodis = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -48,6 +284,42 @@ if (!isset($_SESSION['user_id'])) {
         .page-wrapper {
             flex: 1;
         }
+
+        .navbar-brand-text {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert {
+            animation: slideDown .3s ease;
+        }
+
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.75) !important;
+            transition: color .2s;
+            padding: 0.5rem 0.75rem;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #fff !important;
+        }
+
+        .navbar-nav .nav-link.active {
+            color: #fff !important;
+            font-weight: 600;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.85);
+        }
     </style>
 </head>
 
@@ -67,25 +339,41 @@ if (!isset($_SESSION['user_id'])) {
                     <span class="navbar-brand-text">Sistem Akademik</span>
                 </a>
 
-                <!-- Right side -->
-                <div class="ms-auto d-flex align-items-center gap-2">
-                    <nav class="nav d-none d-md-flex">
-                        <a class="nav-link text-white" href="dashboard.php" title="Dashboard">
-                            <i class="ti ti-home me-1"></i>Dashboard
-                        </a>
-                        <a class="nav-link text-white" href="profile.php" title="Profile">
-                            <i class="ti ti-user me-1"></i>Profile
-                        </a>
-                        <a class="nav-link text-white" href="program_studi.php" title="Program Studi">
-                            <i class="ti ti-building-community me-1"></i>Program Studi
-                        </a>
-                        <a class="nav-link text-white" href="user.php" title="User">
-                            <i class="ti ti-users me-1"></i>User
-                        </a>
-                        <a href="logout.php" class="btn btn-outline ms-4">
-                            <i class="ti ti-logout me-1"></i>Logout
-                        </a>
-                    </nav>
+                <!-- Hamburger (mobile) -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu"
+                    aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Nav links -->
+                <div class="collapse navbar-collapse" id="navbarMenu">
+                    <ul class="navbar-nav ms-auto d-flex align-items-md-center">
+                        <li class="nav-item">
+                            <a href="dashboard.php" class="nav-link d-flex align-items-center gap-1">
+                                <i class="ti ti-home me-1"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="profile.php" class="nav-link d-flex align-items-center gap-1">
+                                <i class="ti ti-user me-1"></i> Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="program_studi.php" class="nav-link d-flex align-items-center gap-1 active">
+                                <i class="ti ti-building-community"></i> Program Studi
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="user.php" class="nav-link d-flex align-items-center gap-1">
+                                <i class="ti ti-users"></i> User
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="logout.php" class="btn btn-outline ms-4">
+                                <i class="ti ti-logout me-1"></i>Logout
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </header>
@@ -95,9 +383,7 @@ if (!isset($_SESSION['user_id'])) {
                     <div class="row g-2 align-items-center">
                         <div class="col">
                             <div class="page-pretitle">Akademik</div>
-                            <h2 class="page-title">
-                                <i class="ti ti-building-community me-2"></i>Program Studi
-                            </h2>
+                            <h2 class="page-title">Manajemen Program Studi</h2>
                         </div>
                     </div>
                 </div>
@@ -105,10 +391,134 @@ if (!isset($_SESSION['user_id'])) {
 
             <div class="page-body">
                 <div class="container-xl">
-                    <div class="card">
-                        <div class="card-body">
-                            HALAMAN PROGRAM STUDI
+                    <?php if ($flash_message): ?>
+                        <div class="mb-3">
+                            <?php echo $flash_message; ?>
                         </div>
+                    <?php endif; ?>
+
+                    <!-- Card Form Tambah Prodi -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="ti ti-plus me-2 text-blue"></i>Tambah Program Studi Baru
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" class="row g-3">
+                                <input type="hidden" name="action" value="add">
+                                <div class="col-md-9">
+                                    <label class="form-label required">Nama Program Studi</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="ti ti-building-community"></i></span>
+                                        <input type="text" name="nama_prodi" class="form-control" placeholder="Contoh: Teknik Elektro" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="ti ti-plus me-1"></i>Tambah
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Card Daftar Prodi -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="ti ti-building-community me-2 text-blue"></i>Daftar Program Studi
+                            </h3>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-vcenter table-hover table-striped card-table">
+                                <thead>
+                                    <tr>
+                                        <th class="w-1 text-center">No</th>
+                                        <th>Nama Program Studi</th>
+                                        <th class="text-center">Jumlah User/Mahasiswa</th>
+                                        <th class="w-1 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (count($prodis) > 0): ?>
+                                        <?php foreach ($prodis as $index => $prodi): ?>
+                                            <tr>
+                                                <td class="text-center text-muted">
+                                                    <small><?php echo str_pad($index + 1, 3, '0', STR_PAD_LEFT); ?></small>
+                                                </td>
+                                                <td>
+                                                    <strong><?php echo htmlspecialchars($prodi['nama_prodi']); ?></strong>
+                                                </td>
+                                                <td class="text-center">
+                                                    <?php if ($prodi['jumlah_user'] > 0): ?>
+                                                        <span class="badge bg-warning"><?php echo $prodi['jumlah_user']; ?> user</span>
+                                                    <?php else: ?>
+                                                        <span class="badge bg-secondary"><?php echo $prodi['jumlah_user']; ?> user</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td class="text-center">
+                                                    <div class="btn-list flex-nowrap justify-content-center">
+                                                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal" onclick="setEditData(<?php echo $prodi['prodi_id']; ?>, '<?php echo htmlspecialchars(addslashes($prodi['nama_prodi'])); ?>')">
+                                                            <i class="ti ti-edit me-1"></i>Edit
+                                                        </button>
+                                                        <form method="POST" style="display:inline;">
+                                                            <input type="hidden" name="action" value="delete">
+                                                            <input type="hidden" name="prodi_id" value="<?php echo $prodi['prodi_id']; ?>">
+                                                            <button type="submit" class="btn btn-sm btn-danger" <?php echo ($prodi['jumlah_user'] > 0) ? 'disabled' : 'onclick="return confirm(\'Apakah Anda yakin ingin menghapus program studi ini?\')"'; ?>>
+                                                                <i class="ti ti-trash me-1"></i>Hapus
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="4">
+                                                <div class="empty">
+                                                    <div class="empty-img">
+                                                        <i class="ti ti-inbox" style="font-size:3rem;color:#94a3b8"></i>
+                                                    </div>
+                                                    <p class="empty-title">Tidak ada program studi</p>
+                                                    <p class="empty-subtitle text-muted">Belum ada program studi. Tambahkan yang baru menggunakan form di atas.</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Edit Prodi -->
+            <div class="modal modal-blur fade" id="editModal" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                    <div class="modal-content">
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <div class="modal-header">
+                            <h5 class="modal-title">Edit Program Studi</h5>
+                        </div>
+                        <form method="POST">
+                            <div class="modal-body">
+                                <input type="hidden" name="action" value="update">
+                                <input type="hidden" name="prodi_id" id="editProdiId" value="">
+                                <div class="mb-3">
+                                    <label class="form-label">Nama Program Studi</label>
+                                    <input type="text" name="nama_prodi" id="editProdiName" class="form-control" placeholder="Masukkan nama program studi" required>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="ti ti-x me-1"></i>Batal
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="ti ti-check me-1"></i>Simpan Perubahan
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -128,6 +538,13 @@ if (!isset($_SESSION['user_id'])) {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js"></script>
+    <script>
+        function setEditData(prodiId, prodiName) {
+            document.getElementById('editProdiId').value = prodiId;
+            document.getElementById('editProdiName').value = prodiName;
+            document.getElementById('editProdiName').focus();
+        }
+    </script>
 </body>
 
 </html>
