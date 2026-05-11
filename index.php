@@ -114,9 +114,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="mb-2">
                         <label class="form-label" for="password">
                             Password
-                            <span class="form-label-description">
-                                <a href="#" class="link-secondary">Lupa sandi?</a>
-                            </span>
                         </label>
                         <input type="password" class="form-control" id="password" name="password"
                             placeholder="Min. 8 character" required minlength="8">

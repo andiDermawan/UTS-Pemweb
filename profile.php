@@ -91,7 +91,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $hashed = password_hash($new_password, PASSWORD_DEFAULT);
                 $update = $pdo->prepare("UPDATE user_tbl SET email = ?, password = ?, prodi_id = ? WHERE userid = ?");
                 $update->execute([$new_email, $hashed, $new_prodi_id, $_SESSION['user_id']]);
-                $success_message = "Profil berhasil diperbarui (termasuk password).";
+
+                // Force logout and require re-login after password change
+                $_SESSION['flash_message'] = '
+                <div class="alert alert-success alert-important" role="alert">
+                    <div class="d-flex align-items-center">
+                        <div class="me-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon me-0" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+                                <path d="M12 8v4" />
+                                <path d="M12 16h.01" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="alert-title mb-0">Silahkan login ulang</h4>
+                        </div>
+                    </div>
+                </div>';
+
+                unset($_SESSION['user_id'], $_SESSION['email']);
+                header("Location: index.php");
+                exit;
             }
         } else {
             // Update tanpa ubah password
@@ -185,6 +206,9 @@ $initial = strtoupper(substr($userLogin['email'], 0, 1));
                         </a>
                         <a class="nav-link text-white" href="user.php">
                             <i class="ti ti-users me-1"></i>User
+                        </a>
+                        <a href="logout.php" class="btn btn-outline ms-4">
+                            <i class="ti ti-logout me-1"></i>Logout
                         </a>
                     </nav>
                 </div>
