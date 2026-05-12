@@ -48,6 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="css/tabler.min.css">
     <!-- Ikon Tabler -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css
+        <link rel="stylesheet" href="css/tabler-overrides.css" />
     <style>
         :root {
             --login-accent: #206bc4;
