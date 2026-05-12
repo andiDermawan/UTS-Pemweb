@@ -7,8 +7,58 @@ require_once 'config.php';
 $pdo = getDBConnection();
 
 // Handle add prodi dengan Post-Redirect-Get pattern
+session_start();
+// Mulai session dan periksa apakah pengguna sudah login.
+// Jika tidak ada `user_id` di session, set flash message singkat
+// dan redirect ke halaman `index.php` (halaman login).
+if (!isset($_SESSION['user_id'])) {
+    $_SESSION['flash_message'] = '
+        <div class="alert alert-danger alert-important" role="alert">
+            <div class="d-flex align-items-center">
+                <div class="me-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon me-0" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+                        <path d="M12 8v4" />
+                        <path d="M12 16h.01" />
+                    </svg>
+                </div>
+                <div>
+                    <h4 class="alert-title mb-0">Harap login terlebih dahulu!</h4>
+                </div>
+            </div>
+        </div>';
+
+    header("Location: index.php");
+    exit;
+}
+// Konfigurasi koneksi database menggunakan PDO (MySQL).
+// Sesuaikan nilai host/db/user/pass jika environment berbeda.
+$host = 'localhost';
+$db = 'pemweb_db';
+$user = 'root';
+$pass = '';
+$charset = 'utf8mb4';
+
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$options = [
+    // Tampilkan exception untuk memudahkan debugging saat development
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    // Ambil hasil sebagai associative array secara default
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+];
+try {
+    $pdo = new PDO($dsn, $user, $pass, $options);
+} catch (\PDOException $e) {
+    die('<div style="padding:2rem;font-family:monospace;color:#e74c3c;">
+        <b>Koneksi database gagal:</b><br>' . htmlspecialchars($e->getMessage()) . '
+    </div>');
+}
+// Menangani permintaan form (POST) untuk tindakan: add, delete, update
+// Menggunakan Post-Redirect-Get (PRG) pattern untuk mencegah form resubmission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($_POST['action'] === 'add') {
+        // Tambah program studi baru
         $nama_prodi = trim($_POST['nama_prodi'] ?? '');
         
         if (empty($nama_prodi)) {
@@ -64,6 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             }
         }
     } elseif ($_POST['action'] === 'delete') {
+        // Hapus program studi (jika tidak ada user terkait)
         $prodi_id = (int)($_POST['prodi_id'] ?? 0);
         
         if ($prodi_id > 0) {
@@ -114,6 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             }
         }
     } elseif ($_POST['action'] === 'update') {
+        // Update nama program studi
         $prodi_id = (int)($_POST['prodi_id'] ?? 0);
         $nama_prodi = trim($_POST['nama_prodi'] ?? '');
         
@@ -128,9 +180,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             header("Location: program_studi.php");
             exit;
         }
-        
         try {
-            // Get current name
+            // Ambil nama prodi saat ini untuk membandingkan (case-insensitive)
             $currentStmt = $pdo->prepare("SELECT nama_prodi FROM prodi_tbl WHERE prodi_id = ?");
             $currentStmt->execute([$prodi_id]);
             $current = $currentStmt->fetch();
@@ -146,9 +197,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 header("Location: program_studi.php");
                 exit;
             }
-            
-            // If name hasn't changed, just redirect
-            if (strtolower($current['nama_prodi']) === strtolower($nama_prodi)) {
+            // Jika nama baru sama dengan nama lama (case-sensitive), tetap update jika ada beda huruf kapital dan tampilkan pesan sukses
+            if ($current['nama_prodi'] === $nama_prodi) {
                 $_SESSION['flash_message'] = '<div class="alert alert-success alert-dismissible mb-4" role="alert">
                     <div class="d-flex align-items-center">
                         <i class="ti ti-circle-check me-2"></i>
@@ -159,8 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 header("Location: program_studi.php");
                 exit;
             }
-            
-            // Check if new name already exists (case-insensitive)
+            // cek ketersediaan nama prodi baru (case-insensitive) untuk prodi lain
             $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM prodi_tbl WHERE LOWER(nama_prodi) = LOWER(?) AND prodi_id != ?");
             $checkStmt->execute([$nama_prodi, $prodi_id]);
             $exists = (int)$checkStmt->fetchColumn();
@@ -169,7 +218,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $_SESSION['flash_message'] = '<div class="alert alert-danger alert-dismissible mb-4" role="alert">
                     <div class="d-flex align-items-center">
                         <i class="ti ti-alert-circle me-2"></i>
-                        <div>Gagal menambahkan program studi! (Mungkin duplikat)</div>
+                        <div>Gagal mengganti program studi! (Mungkin duplikat)</div>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>';
@@ -203,15 +252,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         }
     }
 }
-
-// Display flash message from session
+// Ambil flash message (jika ada) lalu kosongkan supaya tampil sekali saja
 $flash_message = '';
 if (isset($_SESSION['flash_message'])) {
     $flash_message = $_SESSION['flash_message'];
     unset($_SESSION['flash_message']);
 }
-
-// Fetch all prodi with user count
+// Ambil daftar program studi beserta jumlah user/mahasiswa per prodi
+// LEFT JOIN dipakai supaya prodi tanpa user tetap muncul dengan count 0
 $stmt = $pdo->query("
     SELECT p.prodi_id, p.nama_prodi, COUNT(u.userid) as jumlah_user
     FROM prodi_tbl p
@@ -223,7 +271,6 @@ $prodis = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -283,7 +330,6 @@ $prodis = $stmt->fetchAll();
         }
     </style>
 </head>
-
 <body class="antialiased">
     <div class="wrapper">
         <header class="navbar navbar-expand-md navbar-dark bg-blue sticky-top d-print-none">
@@ -383,7 +429,6 @@ $prodis = $stmt->fetchAll();
                             </form>
                         </div>
                     </div>
-
                     <!-- Card Daftar Prodi -->
                     <div class="card">
                         <div class="card-header">
@@ -397,7 +442,7 @@ $prodis = $stmt->fetchAll();
                                     <tr>
                                         <th class="w-1 text-center">No</th>
                                         <th>Nama Program Studi</th>
-                                        <th class="text-center">Jumlah User/Mahasiswa</th>
+                                        <th class="text-center">Jumlah User</th>
                                         <th class="w-1 text-center">Aksi</th>
                                     </tr>
                                 </thead>
@@ -412,11 +457,11 @@ $prodis = $stmt->fetchAll();
                                                     <strong><?php echo htmlspecialchars($prodi['nama_prodi']); ?></strong>
                                                 </td>
                                                 <td class="text-center">
-                                                    <?php if ($prodi['jumlah_user'] > 0): ?>
-                                                        <span class="badge bg-warning"><?php echo $prodi['jumlah_user']; ?> user</span>
-                                                    <?php else: ?>
-                                                        <span class="badge bg-secondary"><?php echo $prodi['jumlah_user']; ?> user</span>
-                                                    <?php endif; ?>
+                                                    <?php
+                                                        $count = (int) $prodi['jumlah_user'];
+                                                        $color = ($count === 0) ? 'secondary' : 'blue';
+                                                    ?>
+                                                    <span class="badge rounded-pill bg-<?php echo $color; ?> text-white"><?php echo $count; ?></span>
                                                 </td>
                                                 <td class="text-center">
                                                     <div class="btn-list flex-nowrap justify-content-center">
@@ -453,7 +498,6 @@ $prodis = $stmt->fetchAll();
                     </div>
                 </div>
             </div>
-
             <!-- Modal Edit Prodi -->
             <div class="modal modal-blur fade" id="editModal" tabindex="-1" role="dialog" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered" role="document">
