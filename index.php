@@ -1,10 +1,7 @@
 <?php
 session_start();
 
-$db_host = 'localhost';
-$db_name = 'pemweb_db';
-$db_user = 'root';
-$db_pass = '';
+require_once 'config.php';
 
 $error_message = '';
 
@@ -16,8 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error_message = "Email dan password wajib diisi!";
     } else {
         try {
-            $pdo = new PDO("mysql:host=$db_host;dbname=$db_name", $db_user, $db_pass);
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $pdo = getDBConnection();
 
             $statement = $pdo->prepare("SELECT * FROM user_tbl WHERE email = :email");
             $statement->bindParam(':email', $email);
