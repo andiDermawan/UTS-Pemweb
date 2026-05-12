@@ -32,21 +32,23 @@ $counts = array_map(function ($r) {
     <title>Dashboard — Sistem Akademik</title>
 
     <!-- CSS Tabler -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/css/tabler.min.css">
-    <!-- Bootstrap lokal (proyek) -->
-    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/tabler.min.css">
     <!-- Ikon Tabler -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css">
 
     <style>
-        html, body {
+        html,
+        body {
             height: 100%;
         }
+
+
         .wrapper {
             display: flex;
             flex-direction: column;
             min-height: 100vh;
         }
+
         .page-wrapper {
             flex: 1;
         }
@@ -123,12 +125,18 @@ $counts = array_map(function ($r) {
         .badge {
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+
+        @media (min-width: 992px) {
+            :root {
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+            }
+        }
     </style>
 </head>
 
 <body class="antialiased">
     <div class="wrapper">
-
         <nav class="navbar navbar-dark bg-blue sticky-top d-print-none">
             <div class="container-xl">
                 <a href="dashboard.php" class="navbar-brand d-flex align-items-center gap-2">
@@ -152,11 +160,17 @@ $counts = array_map(function ($r) {
                 <!-- Menu desktop -->
                 <div class="d-none d-md-flex ms-auto">
                     <ul class="navbar-nav flex-row align-items-center gap-2">
-                        <li class="nav-item"><a class="nav-link text-white active" href="dashboard.php" title="Dashboard"><i class="ti ti-home me-1"></i>Dashboard</a></li>
-                        <li class="nav-item"><a class="nav-link text-white" href="profile.php" title="Profile"><i class="ti ti-user me-1"></i>Profile</a></li>
-                        <li class="nav-item"><a class="nav-link text-white" href="program_studi.php" title="Program Studi"><i class="ti ti-building-community me-1"></i>Program Studi</a></li>
-                        <li class="nav-item"><a class="nav-link text-white" href="user.php" title="User"><i class="ti ti-users me-1"></i>User</a></li>
-                        <li class="nav-item"><a href="logout.php" class="btn btn-light ms-2"><i class="ti ti-logout me-1"></i>Logout</a></li>
+                        <li class="nav-item"><a class="nav-link text-white active" href="dashboard.php"
+                                title="Dashboard"><i class="ti ti-home me-1"></i>Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="profile.php" title="Profile"><i
+                                    class="ti ti-user me-1"></i>Profile</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="program_studi.php"
+                                title="Program Studi"><i class="ti ti-building-community me-1"></i>Program Studi</a>
+                        </li>
+                        <li class="nav-item"><a class="nav-link text-white" href="user.php" title="User"><i
+                                    class="ti ti-users me-1"></i>User</a></li>
+                        <li class="nav-item"><a href="logout.php" class="btn btn-light ms-2"><i
+                                    class="ti ti-logout me-1"></i>Logout</a></li>
                     </ul>
                 </div>
             </div>
@@ -167,10 +181,14 @@ $counts = array_map(function ($r) {
         <div class="collapse d-md-none" id="navbarToggleExternalContent">
             <div class="bg-blue p-3">
                 <div class="d-grid gap-1">
-                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0 active" href="dashboard.php"><i class="ti ti-home me-1"></i>Dashboard</a>
-                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="profile.php"><i class="ti ti-user me-1"></i>Profile</a>
-                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="program_studi.php"><i class="ti ti-building-community me-1"></i>Program Studi</a>
-                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="user.php"><i class="ti ti-users me-1"></i>User</a>
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0 active" href="dashboard.php"><i
+                            class="ti ti-home me-1"></i>Dashboard</a>
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="profile.php"><i
+                            class="ti ti-user me-1"></i>Profile</a>
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="program_studi.php"><i
+                            class="ti ti-building-community me-1"></i>Program Studi</a>
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="user.php"><i
+                            class="ti ti-users me-1"></i>User</a>
                     <a class="btn btn-light w-100 mt-2" href="logout.php"><i class="ti ti-logout me-1"></i>Logout</a>
                 </div>
             </div>
@@ -256,7 +274,8 @@ $counts = array_map(function ($r) {
                 </div>
             </div>
 
-            <footer class="footer d-print-none bg-blue text-white border-top border-blue py-2" style="min-height: auto; margin-top: auto;">
+            <footer class="footer d-print-none bg-blue text-white border-top border-blue py-2"
+                style="min-height: auto; margin-top: auto;">
                 <div class="container-xl d-flex align-items-center justify-content-center" style="min-height: 50px;">
                     <div class="text-center small">
                         <span class="text-white fw-semibold">Sistem Akademik &copy; 2026</span>

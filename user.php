@@ -141,10 +141,10 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Manajemen User — Sistem Akademik</title>
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/css/tabler.min.css">
+  <!-- CSS Tabler -->
+  <link rel="stylesheet" href="css/tabler.min.css">
+  <!-- Ikon Tabler -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css">
-  <!-- Bootstrap lokal (proyek) -->
-  <link rel="stylesheet" href="css/bootstrap.css">
 
   <style>
     html,
@@ -203,6 +203,13 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
       font-weight: 600;
       border-bottom: 2px solid rgba(255, 255, 255, 0.85);
     }
+
+    @media (min-width: 992px) {
+      :root {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+      }
+    }
   </style>
 </head>
 
@@ -234,11 +241,16 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
         <!-- Menu desktop -->
         <div class="d-none d-md-flex ms-auto">
           <ul class="navbar-nav flex-row align-items-center gap-2">
-            <li class="nav-item"><a class="nav-link text-white" href="dashboard.php"><i class="ti ti-home me-1"></i>Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link text-white" href="profile.php"><i class="ti ti-user me-1"></i>Profile</a></li>
-            <li class="nav-item"><a class="nav-link text-white" href="program_studi.php"><i class="ti ti-building-community me-1"></i>Program Studi</a></li>
-            <li class="nav-item"><a class="nav-link text-white active" href="user.php"><i class="ti ti-users me-1"></i>User</a></li>
-            <li class="nav-item"><a href="logout.php" class="btn btn-light ms-2"><i class="ti ti-logout me-1"></i>Logout</a></li>
+            <li class="nav-item"><a class="nav-link text-white" href="dashboard.php"><i
+                  class="ti ti-home me-1"></i>Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link text-white" href="profile.php"><i
+                  class="ti ti-user me-1"></i>Profile</a></li>
+            <li class="nav-item"><a class="nav-link text-white" href="program_studi.php"><i
+                  class="ti ti-building-community me-1"></i>Program Studi</a></li>
+            <li class="nav-item"><a class="nav-link text-white active" href="user.php"><i
+                  class="ti ti-users me-1"></i>User</a></li>
+            <li class="nav-item"><a href="logout.php" class="btn btn-light ms-2"><i
+                  class="ti ti-logout me-1"></i>Logout</a></li>
           </ul>
         </div>
 
@@ -249,10 +261,14 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
     <div class="collapse d-md-none" id="navbarToggleExternalContent">
       <div class="bg-blue p-3">
         <div class="d-grid gap-1">
-          <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="dashboard.php"><i class="ti ti-home me-1"></i>Dashboard</a>
-          <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="profile.php"><i class="ti ti-user me-1"></i>Profile</a>
-          <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="program_studi.php"><i class="ti ti-building-community me-1"></i>Program Studi</a>
-          <a class="btn btn-link text-white text-start w-100 border-bottom m-0 active" href="user.php"><i class="ti ti-users me-1"></i>User</a>
+          <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="dashboard.php"><i
+              class="ti ti-home me-1"></i>Dashboard</a>
+          <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="profile.php"><i
+              class="ti ti-user me-1"></i>Profile</a>
+          <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="program_studi.php"><i
+              class="ti ti-building-community me-1"></i>Program Studi</a>
+          <a class="btn btn-link text-white text-start w-100 border-bottom m-0 active" href="user.php"><i
+              class="ti ti-users me-1"></i>User</a>
           <a class="btn btn-light w-100 mt-2" href="logout.php"><i class="ti ti-logout me-1"></i>Logout</a>
         </div>
       </div>
@@ -367,7 +383,8 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
                 <div class="input-group input-group-sm" style="min-width:220px">
                   <input type="text" name="q" class="form-control" placeholder="Cari email / prodi…"
                     value="<?= htmlspecialchars($search) ?>">
-                  <button type="submit" class="btn btn-sm btn-secondary mr-0 px-2"><i class="ti ti-search mr-2"></i>Cari</button>
+                  <button type="submit" class="btn btn-sm btn-secondary mr-0 px-2"><i
+                      class="ti ti-search mr-2"></i>Cari</button>
                 </div>
                 <?php if ($search): ?>
                   <a href="user.php" class="btn btn-sm btn-ghost-secondary">

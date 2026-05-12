@@ -21,13 +21,13 @@ if (!$userLogin) {
 $prodiList = $pdo->query("SELECT prodi_id, nama_prodi FROM prodi_tbl ORDER BY nama_prodi ASC")->fetchAll();
 
 $success_message = '';
-$error_message   = '';
+$error_message = '';
 
 // Menangani submit form
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $new_email        = trim($_POST['email'] ?? '');
-    $new_prodi_id     = !empty($_POST['prodi_id']) ? (int)$_POST['prodi_id'] : null;
-    $new_password     = $_POST['password'] ?? '';
+    $new_email = trim($_POST['email'] ?? '');
+    $new_prodi_id = !empty($_POST['prodi_id']) ? (int) $_POST['prodi_id'] : null;
+    $new_password = $_POST['password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
 
     // Validasi email
@@ -108,14 +108,17 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile — Sistem Akademik</title>
 
-    <!-- CSS Tabler -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/css/tabler.min.css">
     <!-- Ikon Tabler -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css">
-    <!-- Bootstrap lokal (proyek) -->
-    <link rel="stylesheet" href="css/bootstrap.css">
+    <!-- CSS Tabler -->
+    <link rel="stylesheet" href="css/tabler.min.css">
 
     <style>
+        html,
+        body {
+            height: 100%;
+        }
+
         .avatar-circle {
             width: 80px;
             height: 80px;
@@ -129,8 +132,7 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
             color: #fff;
             margin: 0 auto 1rem;
         }
-    </style>
-    <style>
+
         .avatar-circle-img {
             width: 80px;
             height: 80px;
@@ -139,16 +141,13 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
             display: block;
             margin: 0 auto 1rem;
         }
-    </style>
-    <style>
-        html, body {
-            height: 100%;
-        }
+
         .wrapper {
             display: flex;
             flex-direction: column;
             min-height: 100vh;
         }
+
         .page-wrapper {
             flex: 1;
         }
@@ -174,6 +173,13 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
             font-weight: 600;
             border-bottom: 2px solid rgba(255, 255, 255, 0.85);
         }
+
+        @media (min-width: 992px) {
+            :root {
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+            }
+        }
     </style>
 </head>
 
@@ -184,9 +190,9 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
         <nav class="navbar navbar-dark bg-blue sticky-top d-print-none">
             <div class="container-xl">
                 <a href="dashboard.php" class="navbar-brand d-flex align-items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-school" width="28" height="28"
-                        viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
-                        stroke-linejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-school" width="28"
+                        height="28" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                        stroke-linecap="round" stroke-linejoin="round">
                         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                         <path d="M22 9l-10 -4l-10 4l10 4l10 -4v6" />
                         <path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4" />
@@ -204,11 +210,16 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
                 <!-- Menu desktop -->
                 <div class="d-none d-md-flex ms-auto">
                     <ul class="navbar-nav flex-row align-items-center gap-2">
-                        <li class="nav-item"><a class="nav-link text-white" href="dashboard.php"><i class="ti ti-home me-1"></i>Dashboard</a></li>
-                        <li class="nav-item"><a class="nav-link text-white active" href="profile.php"><i class="ti ti-user me-1"></i>Profile</a></li>
-                        <li class="nav-item"><a class="nav-link text-white" href="program_studi.php"><i class="ti ti-building-community me-1"></i>Program Studi</a></li>
-                        <li class="nav-item"><a class="nav-link text-white" href="user.php"><i class="ti ti-users me-1"></i>User</a></li>
-                        <li class="nav-item"><a href="logout.php" class="btn btn-light ms-2"><i class="ti ti-logout me-1"></i>Logout</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="dashboard.php"><i
+                                    class="ti ti-home me-1"></i>Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link text-white active" href="profile.php"><i
+                                    class="ti ti-user me-1"></i>Profile</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="program_studi.php"><i
+                                    class="ti ti-building-community me-1"></i>Program Studi</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="user.php"><i
+                                    class="ti ti-users me-1"></i>User</a></li>
+                        <li class="nav-item"><a href="logout.php" class="btn btn-light ms-2"><i
+                                    class="ti ti-logout me-1"></i>Logout</a></li>
                     </ul>
                 </div>
             </div>
@@ -218,10 +229,14 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
         <div class="collapse d-md-none" id="navbarToggleExternalContent">
             <div class="bg-blue p-3">
                 <div class="d-grid gap-1">
-                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="dashboard.php"><i class="ti ti-home me-1"></i>Dashboard</a>
-                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0 active" href="profile.php"><i class="ti ti-user me-1"></i>Profile</a>
-                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="program_studi.php"><i class="ti ti-building-community me-1"></i>Program Studi</a>
-                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="user.php"><i class="ti ti-users me-1"></i>User</a>
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="dashboard.php"><i
+                            class="ti ti-home me-1"></i>Dashboard</a>
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0 active" href="profile.php"><i
+                            class="ti ti-user me-1"></i>Profile</a>
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="program_studi.php"><i
+                            class="ti ti-building-community me-1"></i>Program Studi</a>
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="user.php"><i
+                            class="ti ti-users me-1"></i>User</a>
                     <a class="btn btn-light w-100 mt-2" href="logout.php"><i class="ti ti-logout me-1"></i>Logout</a>
                 </div>
             </div>
@@ -273,7 +288,8 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
                             <div class="card mb-4">
                                 <div class="card-body text-center py-4">
                                     <?php if ($hasProfileImg): ?>
-                                        <img src="<?= htmlspecialchars($profileImgPath) ?>" alt="Profile" class="avatar-circle-img">
+                                        <img src="<?= htmlspecialchars($profileImgPath) ?>" alt="Profile"
+                                            class="avatar-circle-img">
                                     <?php else: ?>
                                         <div class="avatar-circle"><?= htmlspecialchars($initial) ?></div>
                                     <?php endif; ?>
@@ -308,12 +324,8 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
                                                 <span class="input-group-text">
                                                     <i class="ti ti-mail"></i>
                                                 </span>
-                                                <input type="email"
-                                                    class="form-control"
-                                                    id="email"
-                                                    name="email"
-                                                    value="<?= htmlspecialchars($userLogin['email']) ?>"
-                                                    required>
+                                                <input type="email" class="form-control" id="email" name="email"
+                                                    value="<?= htmlspecialchars($userLogin['email']) ?>" required>
                                             </div>
                                         </div>
 
@@ -349,13 +361,10 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
                                                 <span class="input-group-text">
                                                     <i class="ti ti-lock"></i>
                                                 </span>
-                                                <input type="password"
-                                                    class="form-control"
-                                                    id="password"
-                                                    name="password"
-                                                    placeholder="Min. 8 karakter"
-                                                    minlength="8">
-                                                <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                                <input type="password" class="form-control" id="password"
+                                                    name="password" placeholder="Min. 8 karakter" minlength="8">
+                                                <button class="btn btn-outline-secondary" type="button"
+                                                    id="togglePassword">
                                                     <i class="ti ti-eye" id="eyeIcon"></i>
                                                 </button>
                                             </div>
@@ -363,16 +372,14 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
 
                                         <!-- Konfirmasi Password -->
                                         <div class="mb-4">
-                                            <label class="form-label" for="confirm_password">Konfirmasi Password Baru</label>
+                                            <label class="form-label" for="confirm_password">Konfirmasi Password
+                                                Baru</label>
                                             <div class="input-group">
                                                 <span class="input-group-text">
                                                     <i class="ti ti-lock-check"></i>
                                                 </span>
-                                                <input type="password"
-                                                    class="form-control"
-                                                    id="confirm_password"
-                                                    name="confirm_password"
-                                                    placeholder="Ulangi password baru">
+                                                <input type="password" class="form-control" id="confirm_password"
+                                                    name="confirm_password" placeholder="Ulangi password baru">
                                             </div>
                                         </div>
 
@@ -389,7 +396,8 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
                 </div>
             </div>
 
-            <footer class="footer d-print-none bg-blue text-white border-top border-blue py-2" style="min-height: auto; margin-top: auto;">
+            <footer class="footer d-print-none bg-blue text-white border-top border-blue py-2"
+                style="min-height: auto; margin-top: auto;">
                 <div class="container-xl d-flex align-items-center justify-content-center" style="min-height: 50px;">
                     <div class="text-center small">
                         <span class="text-white fw-semibold">Sistem Akademik &copy; 2026</span>
@@ -407,7 +415,7 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
     <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js"></script>
     <script>
         // Tombol tampil/sembunyikan password
-        document.getElementById('togglePassword').addEventListener('click', function() {
+        document.getElementById('togglePassword').addEventListener('click', function () {
             const input = document.getElementById('password');
             const icon = document.getElementById('eyeIcon');
             if (input.type === 'password') {

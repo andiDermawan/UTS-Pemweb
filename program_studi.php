@@ -231,15 +231,14 @@ $prodis = $stmt->fetchAll();
     <title>Program Studi — Sistem Akademik</title>
 
     <!-- CSS Tabler -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/css/tabler.min.css">
-    <!-- Bootstrap lokal (proyek) -->
-    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/tabler.min.css">
     <!-- Ikon Tabler -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css">
     <style>
         html,
         body {
             height: 100%;
+            margin: 0;
         }
 
         .wrapper {
@@ -288,6 +287,13 @@ $prodis = $stmt->fetchAll();
             font-weight: 600;
             border-bottom: 2px solid rgba(255, 255, 255, 0.85);
         }
+
+        @media (min-width: 992px) {
+            :root {
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+            }
+        }
     </style>
 </head>
 
@@ -317,11 +323,16 @@ $prodis = $stmt->fetchAll();
                 <!-- Menu desktop -->
                 <div class="d-none d-md-flex ms-auto">
                     <ul class="navbar-nav flex-row align-items-center gap-2">
-                        <li class="nav-item"><a class="nav-link text-white" href="dashboard.php"><i class="ti ti-home me-1"></i>Dashboard</a></li>
-                        <li class="nav-item"><a class="nav-link text-white" href="profile.php"><i class="ti ti-user me-1"></i>Profile</a></li>
-                        <li class="nav-item"><a class="nav-link text-white active" href="program_studi.php"><i class="ti ti-building-community me-1"></i>Program Studi</a></li>
-                        <li class="nav-item"><a class="nav-link text-white" href="user.php"><i class="ti ti-users me-1"></i>User</a></li>
-                        <li class="nav-item"><a href="logout.php" class="btn btn-light ms-2"><i class="ti ti-logout me-1"></i>Logout</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="dashboard.php"><i
+                                    class="ti ti-home me-1"></i>Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="profile.php"><i
+                                    class="ti ti-user me-1"></i>Profile</a></li>
+                        <li class="nav-item"><a class="nav-link text-white active" href="program_studi.php"><i
+                                    class="ti ti-building-community me-1"></i>Program Studi</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="user.php"><i
+                                    class="ti ti-users me-1"></i>User</a></li>
+                        <li class="nav-item"><a href="logout.php" class="btn btn-light ms-2"><i
+                                    class="ti ti-logout me-1"></i>Logout</a></li>
                     </ul>
                 </div>
             </div>
@@ -331,10 +342,14 @@ $prodis = $stmt->fetchAll();
         <div class="collapse d-md-none" id="navbarToggleExternalContent">
             <div class="bg-blue p-3">
                 <div class="d-grid gap-1">
-                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="dashboard.php"><i class="ti ti-home me-1"></i>Dashboard</a>
-                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="profile.php"><i class="ti ti-user me-1"></i>Profile</a>
-                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0 active" href="program_studi.php"><i class="ti ti-building-community me-1"></i>Program Studi</a>
-                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="user.php"><i class="ti ti-users me-1"></i>User</a>
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="dashboard.php"><i
+                            class="ti ti-home me-1"></i>Dashboard</a>
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="profile.php"><i
+                            class="ti ti-user me-1"></i>Profile</a>
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0 active"
+                        href="program_studi.php"><i class="ti ti-building-community me-1"></i>Program Studi</a>
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="user.php"><i
+                            class="ti ti-users me-1"></i>User</a>
                     <a class="btn btn-light w-100 mt-2" href="logout.php"><i class="ti ti-logout me-1"></i>Logout</a>
                 </div>
             </div>
