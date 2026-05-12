@@ -1,4 +1,5 @@
 <?php
+session_start();
 // Pengaman: config.php ditujukan untuk di-include, bukan diakses langsung lewat URL.
 // Jika diakses langsung, selalu redirect ke halaman login.
 $isDirectAccess = false;
@@ -9,6 +10,11 @@ if (isset($_SERVER['SCRIPT_FILENAME'])) {
 }
 
 if ($isDirectAccess) {
+    if (isset($_SESSION['user_id'])) {
+        header('Location: dashboard.php');
+        exit;
+    }
+
     header('Location: index.php');
     exit;
 }
