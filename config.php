@@ -2,11 +2,15 @@
 session_start();
 // Pengaman: config.php ditujukan untuk di-include, bukan diakses langsung lewat URL.
 // Jika diakses langsung, selalu redirect ke halaman login.
+
+// $_SERVER['SCRIPT_FILENAME']
+// = /var/www/html/test.php
+
+// __FILE__
+// = /var/www/html/test.php
 $isDirectAccess = false;
 if (isset($_SERVER['SCRIPT_FILENAME'])) {
     $isDirectAccess = (realpath($_SERVER['SCRIPT_FILENAME']) === realpath(__FILE__));
-} elseif (isset($_SERVER['SCRIPT_NAME'])) {
-    $isDirectAccess = (basename($_SERVER['SCRIPT_NAME']) === basename(__FILE__));
 }
 
 if ($isDirectAccess) {

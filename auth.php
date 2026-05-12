@@ -4,8 +4,6 @@ session_start();
 $isDirectAccess = false;
 if (isset($_SERVER['SCRIPT_FILENAME'])) {
     $isDirectAccess = (realpath($_SERVER['SCRIPT_FILENAME']) === realpath(__FILE__));
-} elseif (isset($_SERVER['SCRIPT_NAME'])) {
-    $isDirectAccess = (basename($_SERVER['SCRIPT_NAME']) === basename(__FILE__));
 }
 
 if ($isDirectAccess) {
