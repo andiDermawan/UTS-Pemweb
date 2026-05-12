@@ -42,10 +42,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Sistem Akademik</title>
-    <!-- Google Fonts -->
+    <!-- Font Google -->
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Tabler CSS -->
+    <!-- CSS Tabler -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/css/tabler.min.css" />
+    <!-- Bootstrap lokal (proyek) -->
+    <link rel="stylesheet" href="css/bootstrap.css">
     <style>
         :root {
             --login-accent: #206bc4;
@@ -61,12 +63,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 radial-gradient(600px 420px at 12% -10%, var(--login-glow), transparent 60%),
                 radial-gradient(720px 480px at 110% 0%, var(--login-glow-2), transparent 55%);
         }
+
+        .login-container {
+            max-width: 768px;
+        }
     </style>
 </head>
 
 <body class="d-flex flex-column">
     <div class="page page-center">
-        <div class="container container-tight py-4">
+        <div class="container container-tight login-container py-4">
             <?php
             if (isset($_SESSION['flash_message'])) {
                 echo $_SESSION['flash_message'];

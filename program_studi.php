@@ -1,66 +1,19 @@
 <?php
-// Include authentication & config
+// Sertakan autentikasi & konfigurasi
 require_once 'auth.php';
 require_once 'config.php';
 
-// Get database connection
+// Ambil koneksi database
 $pdo = getDBConnection();
 
-// Handle add prodi dengan Post-Redirect-Get pattern
-session_start();
-// Mulai session dan periksa apakah pengguna sudah login.
-// Jika tidak ada `user_id` di session, set flash message singkat
-// dan redirect ke halaman `index.php` (halaman login).
-if (!isset($_SESSION['user_id'])) {
-    $_SESSION['flash_message'] = '
-        <div class="alert alert-danger alert-important" role="alert">
-            <div class="d-flex align-items-center">
-                <div class="me-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon me-0" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
-                        <path d="M12 8v4" />
-                        <path d="M12 16h.01" />
-                    </svg>
-                </div>
-                <div>
-                    <h4 class="alert-title mb-0">Harap login terlebih dahulu!</h4>
-                </div>
-            </div>
-        </div>';
-
-    header("Location: index.php");
-    exit;
-}
-// Konfigurasi koneksi database menggunakan PDO (MySQL).
-// Sesuaikan nilai host/db/user/pass jika environment berbeda.
-$host = 'localhost';
-$db = 'pemweb_db';
-$user = 'root';
-$pass = '';
-$charset = 'utf8mb4';
-
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-$options = [
-    // Tampilkan exception untuk memudahkan debugging saat development
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    // Ambil hasil sebagai associative array secara default
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-];
-try {
-    $pdo = new PDO($dsn, $user, $pass, $options);
-} catch (\PDOException $e) {
-    die('<div style="padding:2rem;font-family:monospace;color:#e74c3c;">
-        <b>Koneksi database gagal:</b><br>' . htmlspecialchars($e->getMessage()) . '
-    </div>');
-}
+// Menangani tambah prodi dengan pola Post-Redirect-Get
 // Menangani permintaan form (POST) untuk tindakan: add, delete, update
 // Menggunakan Post-Redirect-Get (PRG) pattern untuk mencegah form resubmission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if ($_POST['action'] === 'add') {
         // Tambah program studi baru
         $nama_prodi = trim($_POST['nama_prodi'] ?? '');
-        
+
         if (empty($nama_prodi)) {
             $_SESSION['flash_message'] = '<div class="alert alert-warning alert-dismissible mb-4" role="alert">
                 <div class="d-flex align-items-center">
@@ -73,11 +26,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             exit;
         } else {
             try {
-                // Check if prodi with same name already exists
+                // Cek apakah nama prodi yang sama sudah ada
                 $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM prodi_tbl WHERE LOWER(nama_prodi) = LOWER(?)");
                 $checkStmt->execute([$nama_prodi]);
-                $exists = (int)$checkStmt->fetchColumn();
-                
+                $exists = (int) $checkStmt->fetchColumn();
+
                 if ($exists > 0) {
                     $_SESSION['flash_message'] = '<div class="alert alert-danger alert-dismissible mb-4" role="alert">
                         <div class="d-flex align-items-center">
@@ -89,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     header("Location: program_studi.php");
                     exit;
                 }
-                
+
                 $stmt = $pdo->prepare("INSERT INTO prodi_tbl (nama_prodi) VALUES (?)");
                 $stmt->execute([$nama_prodi]);
                 $_SESSION['flash_message'] = '<div class="alert alert-success alert-dismissible mb-4" role="alert">
@@ -115,15 +68,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         }
     } elseif ($_POST['action'] === 'delete') {
         // Hapus program studi (jika tidak ada user terkait)
-        $prodi_id = (int)($_POST['prodi_id'] ?? 0);
-        
+        $prodi_id = (int) ($_POST['prodi_id'] ?? 0);
+
         if ($prodi_id > 0) {
             try {
-                // Check if there are users in this prodi
+                // Cek apakah ada user di prodi ini
                 $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_tbl WHERE prodi_id = ?");
                 $stmt->execute([$prodi_id]);
-                $count = (int)$stmt->fetchColumn();
-                
+                $count = (int) $stmt->fetchColumn();
+
                 if ($count > 0) {
                     $_SESSION['flash_message'] = '<div class="alert alert-danger alert-dismissible mb-4" role="alert">
                         <div class="d-flex align-items-center">
@@ -135,13 +88,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 } else {
                     $stmt = $pdo->prepare("DELETE FROM prodi_tbl WHERE prodi_id = ?");
                     $stmt->execute([$prodi_id]);
-                    
+
                     // Reset AUTO_INCREMENT ke max ID + 1
                     $maxIdStmt = $pdo->query("SELECT MAX(prodi_id) FROM prodi_tbl");
-                    $maxId = (int)$maxIdStmt->fetchColumn();
+                    $maxId = (int) $maxIdStmt->fetchColumn();
                     $nextId = max($maxId + 1, 1); // Minimal 1 jika table kosong
                     $pdo->exec("ALTER TABLE prodi_tbl AUTO_INCREMENT = $nextId");
-                    
+
                     $_SESSION['flash_message'] = '<div class="alert alert-success alert-dismissible mb-4" role="alert">
                         <div class="d-flex align-items-center">
                             <i class="ti ti-circle-check me-2"></i>
@@ -166,9 +119,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         }
     } elseif ($_POST['action'] === 'update') {
         // Update nama program studi
-        $prodi_id = (int)($_POST['prodi_id'] ?? 0);
+        $prodi_id = (int) ($_POST['prodi_id'] ?? 0);
         $nama_prodi = trim($_POST['nama_prodi'] ?? '');
-        
+
         if ($prodi_id <= 0 || empty($nama_prodi)) {
             $_SESSION['flash_message'] = '<div class="alert alert-warning alert-dismissible mb-4" role="alert">
                 <div class="d-flex align-items-center">
@@ -185,7 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $currentStmt = $pdo->prepare("SELECT nama_prodi FROM prodi_tbl WHERE prodi_id = ?");
             $currentStmt->execute([$prodi_id]);
             $current = $currentStmt->fetch();
-            
+
             if (!$current) {
                 $_SESSION['flash_message'] = '<div class="alert alert-danger alert-dismissible mb-4" role="alert">
                     <div class="d-flex align-items-center">
@@ -212,8 +165,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             // cek ketersediaan nama prodi baru (case-insensitive) untuk prodi lain
             $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM prodi_tbl WHERE LOWER(nama_prodi) = LOWER(?) AND prodi_id != ?");
             $checkStmt->execute([$nama_prodi, $prodi_id]);
-            $exists = (int)$checkStmt->fetchColumn();
-            
+            $exists = (int) $checkStmt->fetchColumn();
+
             if ($exists > 0) {
                 $_SESSION['flash_message'] = '<div class="alert alert-danger alert-dismissible mb-4" role="alert">
                     <div class="d-flex align-items-center">
@@ -225,11 +178,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 header("Location: program_studi.php");
                 exit;
             }
-            
+
             // Update prodi
             $updateStmt = $pdo->prepare("UPDATE prodi_tbl SET nama_prodi = ? WHERE prodi_id = ?");
             $updateStmt->execute([$nama_prodi, $prodi_id]);
-            
+
             $_SESSION['flash_message'] = '<div class="alert alert-success alert-dismissible mb-4" role="alert">
                 <div class="d-flex align-items-center">
                     <i class="ti ti-circle-check me-2"></i>
@@ -271,24 +224,30 @@ $prodis = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Program Studi — Sistem Akademik</title>
 
-    <!-- Tabler CSS -->
+    <!-- CSS Tabler -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/css/tabler.min.css">
-    <!-- Tabler Icons -->
+    <!-- Bootstrap lokal (proyek) -->
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <!-- Ikon Tabler -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css">
     <style>
-        html, body {
+        html,
+        body {
             height: 100%;
         }
+
         .wrapper {
             display: flex;
             flex-direction: column;
             min-height: 100vh;
         }
+
         .page-wrapper {
             flex: 1;
         }
@@ -303,6 +262,7 @@ $prodis = $stmt->fetchAll();
                 opacity: 0;
                 transform: translateY(-8px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -330,11 +290,12 @@ $prodis = $stmt->fetchAll();
         }
     </style>
 </head>
+
 <body class="antialiased">
     <div class="wrapper">
-        <header class="navbar navbar-expand-md navbar-dark bg-blue sticky-top d-print-none">
+        <nav class="navbar navbar-dark bg-blue sticky-top d-print-none">
             <div class="container-xl">
-                <!-- Brand -->
+                <!-- Logo/Merek -->
                 <a href="dashboard.php" class="navbar-brand d-flex align-items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-school" width="28"
                         height="28" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
@@ -346,44 +307,38 @@ $prodis = $stmt->fetchAll();
                     <span class="navbar-brand-text">Sistem Akademik</span>
                 </a>
 
-                <!-- Hamburger (mobile) -->
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu"
-                    aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+                <!-- Hamburger (seluler) - tombol collapse Bootstrap -->
+                <button class="navbar-toggler d-md-none" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="ti ti-menu-2"></i>
                 </button>
 
-                <!-- Nav links -->
-                <div class="collapse navbar-collapse" id="navbarMenu">
-                    <ul class="navbar-nav ms-auto d-flex align-items-md-center">
-                        <li class="nav-item">
-                            <a href="dashboard.php" class="nav-link d-flex align-items-center gap-1">
-                                <i class="ti ti-home me-1"></i> Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="profile.php" class="nav-link d-flex align-items-center gap-1">
-                                <i class="ti ti-user me-1"></i> Profile
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="program_studi.php" class="nav-link d-flex align-items-center gap-1 active">
-                                <i class="ti ti-building-community"></i> Program Studi
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="user.php" class="nav-link d-flex align-items-center gap-1">
-                                <i class="ti ti-users"></i> User
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="logout.php" class="btn btn-outline ms-4">
-                                <i class="ti ti-logout me-1"></i>Logout
-                            </a>
-                        </li>
+                <!-- Menu desktop -->
+                <div class="d-none d-md-flex ms-auto">
+                    <ul class="navbar-nav flex-row align-items-center gap-2">
+                        <li class="nav-item"><a class="nav-link text-white" href="dashboard.php"><i class="ti ti-home me-1"></i>Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="profile.php"><i class="ti ti-user me-1"></i>Profile</a></li>
+                        <li class="nav-item"><a class="nav-link text-white active" href="program_studi.php"><i class="ti ti-building-community me-1"></i>Program Studi</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="user.php"><i class="ti ti-users me-1"></i>User</a></li>
+                        <li class="nav-item"><a href="logout.php" class="btn btn-light ms-2"><i class="ti ti-logout me-1"></i>Logout</a></li>
                     </ul>
                 </div>
             </div>
-        </header>
+        </nav>
+
+        <!-- Menu collapse seluler (gaya contoh Bootstrap) -->
+        <div class="collapse d-md-none" id="navbarToggleExternalContent">
+            <div class="bg-blue p-3">
+                <div class="d-grid gap-1">
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="dashboard.php"><i class="ti ti-home me-1"></i>Dashboard</a>
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="profile.php"><i class="ti ti-user me-1"></i>Profile</a>
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0 active" href="program_studi.php"><i class="ti ti-building-community me-1"></i>Program Studi</a>
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="user.php"><i class="ti ti-users me-1"></i>User</a>
+                    <a class="btn btn-light w-100 mt-2" href="logout.php"><i class="ti ti-logout me-1"></i>Logout</a>
+                </div>
+            </div>
+        </div>
         <div class="page-wrapper">
             <div class="page-header d-print-none">
                 <div class="container-xl">
@@ -418,7 +373,8 @@ $prodis = $stmt->fetchAll();
                                     <label class="form-label required">Nama Program Studi</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="ti ti-building-community"></i></span>
-                                        <input type="text" name="nama_prodi" class="form-control" placeholder="Contoh: Ilmu Komputer" required>
+                                        <input type="text" name="nama_prodi" class="form-control"
+                                            placeholder="Contoh: Ilmu Komputer" required>
                                     </div>
                                 </div>
                                 <div class="col-md-3 d-flex align-items-end">
@@ -458,19 +414,23 @@ $prodis = $stmt->fetchAll();
                                                 </td>
                                                 <td class="text-center">
                                                     <?php
-                                                        $count = (int) $prodi['jumlah_user'];
-                                                        $color = ($count === 0) ? 'secondary' : 'blue';
+                                                    $count = (int) $prodi['jumlah_user'];
+                                                    $color = ($count === 0) ? 'secondary' : 'blue';
                                                     ?>
-                                                    <span class="badge rounded-pill bg-<?php echo $color; ?> text-white"><?php echo $count; ?></span>
+                                                    <span
+                                                        class="badge rounded-pill bg-<?php echo $color; ?> text-white"><?php echo $count; ?></span>
                                                 </td>
                                                 <td class="text-center">
                                                     <div class="btn-list flex-nowrap justify-content-center">
-                                                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editModal" onclick="setEditData(<?php echo $prodi['prodi_id']; ?>, '<?php echo htmlspecialchars(addslashes($prodi['nama_prodi'])); ?>')">
+                                                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal"
+                                                            data-bs-target="#editModal"
+                                                            onclick="setEditData(<?php echo $prodi['prodi_id']; ?>, '<?php echo htmlspecialchars(addslashes($prodi['nama_prodi'])); ?>')">
                                                             <i class="ti ti-edit me-1"></i>Edit
                                                         </button>
                                                         <form method="POST" style="display:inline;">
                                                             <input type="hidden" name="action" value="delete">
-                                                            <input type="hidden" name="prodi_id" value="<?php echo $prodi['prodi_id']; ?>">
+                                                            <input type="hidden" name="prodi_id"
+                                                                value="<?php echo $prodi['prodi_id']; ?>">
                                                             <button type="submit" class="btn btn-sm btn-danger" <?php echo ($prodi['jumlah_user'] > 0) ? 'disabled' : 'onclick="return confirm(\'Apakah Anda yakin ingin menghapus program studi ini?\')"'; ?>>
                                                                 <i class="ti ti-trash me-1"></i>Hapus
                                                             </button>
@@ -487,13 +447,19 @@ $prodis = $stmt->fetchAll();
                                                         <i class="ti ti-inbox" style="font-size:3rem;color:#94a3b8"></i>
                                                     </div>
                                                     <p class="empty-title">Tidak ada program studi</p>
-                                                    <p class="empty-subtitle text-muted">Belum ada program studi. Tambahkan yang baru menggunakan form di atas.</p>
+                                                    <p class="empty-subtitle text-muted">Belum ada program studi. Tambahkan
+                                                        yang baru menggunakan form di atas.</p>
                                                 </div>
                                             </td>
                                         </tr>
                                     <?php endif; ?>
                                 </tbody>
                             </table>
+                        </div>
+                        <div class="card-footer d-flex align-items-center justify-content-between">
+                            <p class="m-0 text-muted small">
+                                Menampilkan <strong><?= count($prodis) ?></strong> program studi
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -512,7 +478,8 @@ $prodis = $stmt->fetchAll();
                                 <input type="hidden" name="prodi_id" id="editProdiId" value="">
                                 <div class="mb-3">
                                     <label class="form-label">Nama Program Studi</label>
-                                    <input type="text" name="nama_prodi" id="editProdiName" class="form-control" placeholder="Masukkan nama program studi" required>
+                                    <input type="text" name="nama_prodi" id="editProdiName" class="form-control"
+                                        placeholder="Masukkan nama program studi" required>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -528,7 +495,8 @@ $prodis = $stmt->fetchAll();
                 </div>
             </div>
 
-            <footer class="footer d-print-none bg-blue text-white border-top border-blue py-2" style="min-height: auto; margin-top: auto;">
+            <footer class="footer d-print-none bg-blue text-white border-top border-blue py-2"
+                style="min-height: auto; margin-top: auto;">
                 <div class="container-xl d-flex align-items-center justify-content-center" style="min-height: 50px;">
                     <div class="text-center small">
                         <span class="text-white fw-semibold">Sistem Akademik &copy; 2026</span>
@@ -542,6 +510,7 @@ $prodis = $stmt->fetchAll();
         </div>
     </div>
 
+    <script src="js/bootstrap.bundle.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js"></script>
     <script>
         function setEditData(prodiId, prodiName) {

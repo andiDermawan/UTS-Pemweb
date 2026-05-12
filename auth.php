@@ -1,8 +1,8 @@
 <?php
-// Authentication & Authorization Middleware
+// Middleware Autentikasi & Otorisasi
 session_start();
 
-// Check if user is logged in
+// Cek apakah user sudah login
 if (!isset($_SESSION['user_id'])) {
     $_SESSION['flash_message'] = '
         <div class="alert alert-danger alert-important" role="alert">

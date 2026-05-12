@@ -1,12 +1,12 @@
 <?php
-// Include authentication & config
+// Sertakan autentikasi & konfigurasi
 require_once 'auth.php';
 require_once 'config.php';
 
-// Get database connection
+// Ambil koneksi database
 $pdo = getDBConnection();
 
-// Fetch statistics
+// Ambil statistik
 $totalProdi = (int) $pdo->query("SELECT COUNT(*) FROM prodi_tbl")->fetchColumn();
 $totalUser = (int) $pdo->query("SELECT COUNT(*) FROM user_tbl")->fetchColumn();
 
@@ -31,9 +31,11 @@ $counts = array_map(function ($r) {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Dashboard — Sistem Akademik</title>
 
-    <!-- Tabler CSS -->
+    <!-- CSS Tabler -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/css/tabler.min.css">
-    <!-- Tabler Icons -->
+    <!-- Bootstrap lokal (proyek) -->
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <!-- Ikon Tabler -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css">
 
     <style>
@@ -55,7 +57,24 @@ $counts = array_map(function ($r) {
             font-size: 1rem;
         }
 
-        /* Animasi smooth untuk cards */
+        /* Gaya navbar (konsisten di semua halaman) */
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.75) !important;
+            transition: color .2s;
+            padding: 0.5rem 0.75rem;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #fff !important;
+        }
+
+        .navbar-nav .nav-link.active {
+            color: #fff !important;
+            font-weight: 600;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.85);
+        }
+
+        /* Animasi halus untuk kartu */
         @keyframes slideUp {
             from {
                 opacity: 0;
@@ -84,7 +103,7 @@ $counts = array_map(function ($r) {
             animation-delay: 0.3s;
         }
 
-        /* Hover effect untuk stat cards */
+        /* Efek hover untuk kartu statistik */
         .card {
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
@@ -94,13 +113,13 @@ $counts = array_map(function ($r) {
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
-        /* Styling untuk chart card */
+        /* Gaya untuk kartu grafik */
         .chart-container {
             position: relative;
             height: 300px;
         }
 
-        /* Badge styling */
+        /* Gaya badge */
         .badge {
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
@@ -110,9 +129,8 @@ $counts = array_map(function ($r) {
 <body class="antialiased">
     <div class="wrapper">
 
-        <header class="navbar navbar-expand-md navbar-dark bg-blue sticky-top d-print-none">
+        <nav class="navbar navbar-dark bg-blue sticky-top d-print-none">
             <div class="container-xl">
-                <!-- Brand -->
                 <a href="dashboard.php" class="navbar-brand d-flex align-items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-school" width="28"
                         height="28" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
@@ -124,28 +142,39 @@ $counts = array_map(function ($r) {
                     <span class="navbar-brand-text">Sistem Akademik</span>
                 </a>
 
-                <!-- Right side -->
-                <div class="ms-auto d-flex align-items-center gap-2">
-                    <nav class="nav d-none d-md-flex">
-                        <a class="nav-link text-white" href="dashboard.php" title="Dashboard">
-                            <i class="ti ti-home me-1"></i>Dashboard
-                        </a>
-                        <a class="nav-link text-white" href="profile.php" title="Profile">
-                            <i class="ti ti-user me-1"></i>Profile
-                        </a>
-                        <a class="nav-link text-white" href="program_studi.php" title="Program Studi">
-                            <i class="ti ti-building-community me-1"></i>Program Studi
-                        </a>
-                        <a class="nav-link text-white" href="user.php" title="User">
-                            <i class="ti ti-users me-1"></i>User
-                        </a>
-                        <a href="logout.php" class="btn btn-outline ms-4">
-                            <i class="ti ti-logout me-1"></i>Logout
-                        </a>
-                    </nav>
+                <!-- Hamburger (seluler) - tombol collapse Bootstrap -->
+                <button class="navbar-toggler d-md-none" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="ti ti-menu-2"></i>
+                </button>
+
+                <!-- Menu desktop -->
+                <div class="d-none d-md-flex ms-auto">
+                    <ul class="navbar-nav flex-row align-items-center gap-2">
+                        <li class="nav-item"><a class="nav-link text-white active" href="dashboard.php" title="Dashboard"><i class="ti ti-home me-1"></i>Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="profile.php" title="Profile"><i class="ti ti-user me-1"></i>Profile</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="program_studi.php" title="Program Studi"><i class="ti ti-building-community me-1"></i>Program Studi</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="user.php" title="User"><i class="ti ti-users me-1"></i>User</a></li>
+                        <li class="nav-item"><a href="logout.php" class="btn btn-light ms-2"><i class="ti ti-logout me-1"></i>Logout</a></li>
+                    </ul>
                 </div>
             </div>
-        </header>
+
+        </nav>
+
+        <!-- Menu collapse seluler (gaya contoh Bootstrap) -->
+        <div class="collapse d-md-none" id="navbarToggleExternalContent">
+            <div class="bg-blue p-3">
+                <div class="d-grid gap-1">
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0 active" href="dashboard.php"><i class="ti ti-home me-1"></i>Dashboard</a>
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="profile.php"><i class="ti ti-user me-1"></i>Profile</a>
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="program_studi.php"><i class="ti ti-building-community me-1"></i>Program Studi</a>
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="user.php"><i class="ti ti-users me-1"></i>User</a>
+                    <a class="btn btn-light w-100 mt-2" href="logout.php"><i class="ti ti-logout me-1"></i>Logout</a>
+                </div>
+            </div>
+        </div>
 
         <div class="page-wrapper">
             <div class="page-header d-print-none">
@@ -242,6 +271,7 @@ $counts = array_map(function ($r) {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="js/bootstrap.bundle.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js"></script>
 
     <script>

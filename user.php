@@ -1,9 +1,9 @@
 <?php
-// Include authentication & config
+// Sertakan autentikasi & konfigurasi
 require_once 'auth.php';
 require_once 'config.php';
 
-// Get database connection
+// Ambil koneksi database
 $pdo = getDBConnection();
 
 $pesan = '';
@@ -29,8 +29,8 @@ if ($aksi === 'tambah' && $_SERVER['REQUEST_METHOD'] === 'POST') {
   } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $pesan = 'Format email tidak valid.';
     $jenisP = 'error';
-  } elseif (strlen($password) < 8) {         
-    $pesan  = 'Password minimal 8 karakter.';
+  } elseif (strlen($password) < 8) {
+    $pesan = 'Password minimal 8 karakter.';
     $jenisP = 'error';
   } else {
     try {
@@ -64,7 +64,7 @@ if ($aksi === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
   } else {
     try {
       if (!empty($password) && strlen($password) < 8) {
-        $pesan  = 'Password minimal 8 karakter.';
+        $pesan = 'Password minimal 8 karakter.';
         $jenisP = 'error';
       } else {
         $stmt = $pdo->prepare("UPDATE user_tbl SET email=?, prodi_id=? WHERE userid=?");
@@ -129,6 +129,9 @@ $formAksi = $isEdit ? 'edit' : 'tambah';
 $formJudul = $isEdit ? 'Edit User' : 'Tambah User Baru';
 
 $currentPage = 'user';
+// Path gambar profil default (web) dan pengecekan keberadaan file
+$profileImgPath = 'images/profile.png';
+$hasProfileImg = is_file(__DIR__ . '/images/profile.png');
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -140,16 +143,21 @@ $currentPage = 'user';
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/css/tabler.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css">
+  <!-- Bootstrap lokal (proyek) -->
+  <link rel="stylesheet" href="css/bootstrap.css">
 
   <style>
-    html, body {
+    html,
+    body {
       height: 100%;
     }
+
     .wrapper {
       display: flex;
       flex-direction: column;
       min-height: 100vh;
     }
+
     .page-wrapper {
       flex: 1;
     }
@@ -201,11 +209,11 @@ $currentPage = 'user';
 <body class="antialiased">
   <div class="wrapper">
 
-    <header class="navbar navbar-expand-md navbar-dark bg-blue sticky-top d-print-none">
+    <nav class="navbar navbar-dark bg-blue sticky-top d-print-none">
       <div class="container-xl">
 
-        <!-- Brand -->
-        <a href="lamanUtama.php" class="navbar-brand d-flex align-items-center gap-2">
+        <!-- Logo/Merek -->
+        <a href="dashboard.php" class="navbar-brand d-flex align-items-center gap-2">
           <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-school" width="28" height="28"
             viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
             stroke-linejoin="round">
@@ -216,50 +224,39 @@ $currentPage = 'user';
           <span class="navbar-brand-text">Sistem Akademik</span>
         </a>
 
-        <!-- Hamburger (mobile) -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu"
-          aria-controls="navbarMenu" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
+        <!-- Hamburger (seluler) - tombol collapse Bootstrap -->
+        <button class="navbar-toggler d-md-none" type="button" data-bs-toggle="collapse"
+          data-bs-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent"
+          aria-expanded="false" aria-label="Toggle navigation">
+          <i class="ti ti-menu-2"></i>
         </button>
 
-        <!-- Nav links -->
-        <div class="collapse navbar-collapse" id="navbarMenu">
-          <ul class="navbar-nav ms-auto d-flex align-items-md-center">
-            <li class="nav-item">
-              <a href="dashboard.php"
-                class="nav-link d-flex align-items-center gap-1 <?= $currentPage === 'dashboard' ? 'active' : '' ?>">
-                <i class="ti ti-home me-1"></i> Dashboard
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="profile.php"
-                class="nav-link d-flex align-items-center gap-1 <?= $currentPage === 'profile' ? 'active' : '' ?>">
-                <i class="ti ti-user me-1"></i> Profile
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="program_studi.php"
-                class="nav-link d-flex align-items-center gap-1 <?= $currentPage === 'prodi' ? 'active' : '' ?>">
-                <i class="ti ti-building-community"></i> Program Studi
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="user.php"
-                class="nav-link d-flex align-items-center gap-1 <?= $currentPage === 'user' ? 'active' : '' ?>">
-                <i class="ti ti-users"></i> User
-                <span class="badge bg-white text-blue fw-bold ms-1"><?= count($users) ?></span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a href="logout.php" class="btn btn-outline ms-4">
-                <i class="ti ti-logout me-1"></i>Logout
-              </a>
-            </li>
+        <!-- Menu desktop -->
+        <div class="d-none d-md-flex ms-auto">
+          <ul class="navbar-nav flex-row align-items-center gap-2">
+            <li class="nav-item"><a class="nav-link text-white" href="dashboard.php"><i class="ti ti-home me-1"></i>Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link text-white" href="profile.php"><i class="ti ti-user me-1"></i>Profile</a></li>
+            <li class="nav-item"><a class="nav-link text-white" href="program_studi.php"><i class="ti ti-building-community me-1"></i>Program Studi</a></li>
+            <li class="nav-item"><a class="nav-link text-white active" href="user.php"><i class="ti ti-users me-1"></i>User</a></li>
+            <li class="nav-item"><a href="logout.php" class="btn btn-light ms-2"><i class="ti ti-logout me-1"></i>Logout</a></li>
           </ul>
         </div>
 
       </div>
-    </header>
+    </nav>
+
+    <!-- Menu collapse seluler (gaya contoh Bootstrap) -->
+    <div class="collapse d-md-none" id="navbarToggleExternalContent">
+      <div class="bg-blue p-3">
+        <div class="d-grid gap-1">
+          <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="dashboard.php"><i class="ti ti-home me-1"></i>Dashboard</a>
+          <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="profile.php"><i class="ti ti-user me-1"></i>Profile</a>
+          <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="program_studi.php"><i class="ti ti-building-community me-1"></i>Program Studi</a>
+          <a class="btn btn-link text-white text-start w-100 border-bottom m-0 active" href="user.php"><i class="ti ti-users me-1"></i>User</a>
+          <a class="btn btn-light w-100 mt-2" href="logout.php"><i class="ti ti-logout me-1"></i>Logout</a>
+        </div>
+      </div>
+    </div>
 
     <div class="page-wrapper">
       <div class="page-header d-print-none">
@@ -368,11 +365,10 @@ $currentPage = 'user';
               </h3>
               <form method="GET" action="user.php" class="d-flex align-items-center gap-2 flex-wrap">
                 <div class="input-group input-group-sm" style="min-width:220px">
-                  <span class="input-group-text"><i class="ti ti-search"></i></span>
                   <input type="text" name="q" class="form-control" placeholder="Cari email / prodi…"
                     value="<?= htmlspecialchars($search) ?>">
+                  <button type="submit" class="btn btn-sm btn-secondary mr-0 px-2"><i class="ti ti-search mr-2"></i>Cari</button>
                 </div>
-                <button type="submit" class="btn btn-sm btn-secondary">Cari</button>
                 <?php if ($search): ?>
                   <a href="user.php" class="btn btn-sm btn-ghost-secondary">
                     <i class="ti ti-x me-1"></i>Reset
@@ -425,9 +421,14 @@ $currentPage = 'user';
                         </td>
                         <td>
                           <div class="d-flex align-items-center gap-2">
-                            <span class="avatar avatar-sm <?= $avatarColor ?> text-white avatar-initials rounded-circle">
-                              <?= $initial ?>
-                            </span>
+                            <?php if ($hasProfileImg): ?>
+                              <img src="<?= htmlspecialchars($profileImgPath) ?>" alt="Profile"
+                                class="avatar avatar-sm rounded-circle" style="width:32px;height:32px;object-fit:cover;">
+                            <?php else: ?>
+                              <span class="avatar avatar-sm <?= $avatarColor ?> text-white avatar-initials rounded-circle">
+                                <?= $initial ?>
+                              </span>
+                            <?php endif; ?>
                             <span class="text-body fw-medium"><?= htmlspecialchars($u['email']) ?></span>
                           </div>
                         </td>
@@ -471,7 +472,8 @@ $currentPage = 'user';
         </div>
       </div>
 
-      <footer class="footer d-print-none bg-blue text-white border-top border-blue py-2" style="min-height: auto; margin-top: auto;">
+      <footer class="footer d-print-none bg-blue text-white border-top border-blue py-2"
+        style="min-height: auto; margin-top: auto;">
         <div class="container-xl d-flex align-items-center justify-content-center" style="min-height: 50px;">
           <div class="text-center small">
             <span class="text-white fw-semibold">Sistem Akademik &copy; 2026</span>
@@ -511,6 +513,7 @@ $currentPage = 'user';
     </div>
   </div>
 
+  <script src="js/bootstrap.bundle.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {

@@ -1,9 +1,9 @@
 <?php
-// Include authentication & config
+// Sertakan autentikasi & konfigurasi
 require_once 'auth.php';
 require_once 'config.php';
 
-// Get database connection
+// Ambil koneksi database
 $pdo = getDBConnection();
 
 // Ambil data user yang sedang login
@@ -23,7 +23,7 @@ $prodiList = $pdo->query("SELECT prodi_id, nama_prodi FROM prodi_tbl ORDER BY na
 $success_message = '';
 $error_message   = '';
 
-// Handle form submit
+// Menangani submit form
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $new_email        = trim($_POST['email'] ?? '');
     $new_prodi_id     = !empty($_POST['prodi_id']) ? (int)$_POST['prodi_id'] : null;
@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $update = $pdo->prepare("UPDATE user_tbl SET email = ?, password = ?, prodi_id = ? WHERE userid = ?");
                 $update->execute([$new_email, $hashed, $new_prodi_id, $_SESSION['user_id']]);
 
-                // Force logout and require re-login after password change
+                // Paksa logout dan minta login ulang setelah ganti password
                 $_SESSION['flash_message'] = '
                 <div class="alert alert-success alert-important" role="alert">
                     <div class="d-flex align-items-center">
@@ -95,6 +95,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $initial = strtoupper(substr($userLogin['email'], 0, 1));
+// Path gambar profil default (path web)
+$profileImgPath = 'images/profile.png';
+// Cek file di filesystem relatif ke script ini
+$hasProfileImg = is_file(__DIR__ . '/images/profile.png');
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -104,10 +108,12 @@ $initial = strtoupper(substr($userLogin['email'], 0, 1));
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile — Sistem Akademik</title>
 
-    <!-- Tabler CSS -->
+    <!-- CSS Tabler -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/css/tabler.min.css">
-    <!-- Tabler Icons -->
+    <!-- Ikon Tabler -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css">
+    <!-- Bootstrap lokal (proyek) -->
+    <link rel="stylesheet" href="css/bootstrap.css">
 
     <style>
         .avatar-circle {
@@ -125,6 +131,16 @@ $initial = strtoupper(substr($userLogin['email'], 0, 1));
         }
     </style>
     <style>
+        .avatar-circle-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+            margin: 0 auto 1rem;
+        }
+    </style>
+    <style>
         html, body {
             height: 100%;
         }
@@ -136,14 +152,36 @@ $initial = strtoupper(substr($userLogin['email'], 0, 1));
         .page-wrapper {
             flex: 1;
         }
+
+        .navbar-brand-text {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        /* Gaya navbar (konsisten di semua halaman) */
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.75) !important;
+            transition: color .2s;
+            padding: 0.5rem 0.75rem;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #fff !important;
+        }
+
+        .navbar-nav .nav-link.active {
+            color: #fff !important;
+            font-weight: 600;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.85);
+        }
     </style>
 </head>
 
 <body class="antialiased">
     <div class="wrapper">
 
-        <!-- Navbar -->
-        <header class="navbar navbar-expand-md navbar-dark bg-blue sticky-top d-print-none">
+        <!-- Navigasi (Navbar) -->
+        <nav class="navbar navbar-dark bg-blue sticky-top d-print-none">
             <div class="container-xl">
                 <a href="dashboard.php" class="navbar-brand d-flex align-items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-school" width="28" height="28"
@@ -153,33 +191,44 @@ $initial = strtoupper(substr($userLogin['email'], 0, 1));
                         <path d="M22 9l-10 -4l-10 4l10 4l10 -4v6" />
                         <path d="M6 10.6v5.4a6 3 0 0 0 12 0v-5.4" />
                     </svg>
-                    <span class="fw-bold" style="font-size:1rem;">Sistem Akademik</span>
+                    <span class="navbar-brand-text">Sistem Akademik</span>
                 </a>
 
-                <div class="ms-auto d-flex align-items-center gap-2">
-                    <nav class="nav d-none d-md-flex">
-                        <a class="nav-link text-white" href="dashboard.php">
-                            <i class="ti ti-home me-1"></i>Dashboard
-                        </a>
-                        <a class="nav-link text-white fw-bold" href="profile.php">
-                            <i class="ti ti-user me-1"></i>Profile
-                        </a>
-                        <a class="nav-link text-white" href="program_studi.php">
-                            <i class="ti ti-building-community me-1"></i>Program Studi
-                        </a>
-                        <a class="nav-link text-white" href="user.php">
-                            <i class="ti ti-users me-1"></i>User
-                        </a>
-                        <a href="logout.php" class="btn btn-outline ms-4">
-                            <i class="ti ti-logout me-1"></i>Logout
-                        </a>
-                    </nav>
+                <!-- Hamburger (seluler) - tombol collapse Bootstrap -->
+                <button class="navbar-toggler d-md-none" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="ti ti-menu-2"></i>
+                </button>
+
+                <!-- Menu desktop -->
+                <div class="d-none d-md-flex ms-auto">
+                    <ul class="navbar-nav flex-row align-items-center gap-2">
+                        <li class="nav-item"><a class="nav-link text-white" href="dashboard.php"><i class="ti ti-home me-1"></i>Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link text-white active" href="profile.php"><i class="ti ti-user me-1"></i>Profile</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="program_studi.php"><i class="ti ti-building-community me-1"></i>Program Studi</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="user.php"><i class="ti ti-users me-1"></i>User</a></li>
+                        <li class="nav-item"><a href="logout.php" class="btn btn-light ms-2"><i class="ti ti-logout me-1"></i>Logout</a></li>
+                    </ul>
                 </div>
             </div>
-        </header>
+        </nav>
+
+        <!-- Menu collapse seluler (gaya contoh Bootstrap) -->
+        <div class="collapse d-md-none" id="navbarToggleExternalContent">
+            <div class="bg-blue p-3">
+                <div class="d-grid gap-1">
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="dashboard.php"><i class="ti ti-home me-1"></i>Dashboard</a>
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0 active" href="profile.php"><i class="ti ti-user me-1"></i>Profile</a>
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="program_studi.php"><i class="ti ti-building-community me-1"></i>Program Studi</a>
+                    <a class="btn btn-link text-white text-start w-100 border-bottom m-0" href="user.php"><i class="ti ti-users me-1"></i>User</a>
+                    <a class="btn btn-light w-100 mt-2" href="logout.php"><i class="ti ti-logout me-1"></i>Logout</a>
+                </div>
+            </div>
+        </div>
 
         <div class="page-wrapper">
-            <!-- Page Header -->
+            <!-- Header Halaman -->
             <div class="page-header d-print-none">
                 <div class="container-xl">
                     <div class="row g-2 align-items-center">
@@ -196,7 +245,7 @@ $initial = strtoupper(substr($userLogin['email'], 0, 1));
             <div class="page-body">
                 <div class="container-xl">
 
-                    <!-- Alert sukses/error -->
+                    <!-- Notifikasi sukses/error -->
                     <?php if (!empty($success_message)): ?>
                         <div class="alert alert-success alert-dismissible mb-4" role="alert">
                             <div class="d-flex align-items-center">
@@ -223,7 +272,11 @@ $initial = strtoupper(substr($userLogin['email'], 0, 1));
                             <!-- Card Info Profil -->
                             <div class="card mb-4">
                                 <div class="card-body text-center py-4">
-                                    <div class="avatar-circle"><?= htmlspecialchars($initial) ?></div>
+                                    <?php if ($hasProfileImg): ?>
+                                        <img src="<?= htmlspecialchars($profileImgPath) ?>" alt="Profile" class="avatar-circle-img">
+                                    <?php else: ?>
+                                        <div class="avatar-circle"><?= htmlspecialchars($initial) ?></div>
+                                    <?php endif; ?>
                                     <h3 class="mb-1"><?= htmlspecialchars($userLogin['email']) ?></h3>
                                     <div class="text-muted">
                                         <i class="ti ti-building-community me-1"></i>
@@ -246,7 +299,6 @@ $initial = strtoupper(substr($userLogin['email'], 0, 1));
                                 </div>
                                 <div class="card-body">
                                     <form method="POST" action="">
-
                                         <!-- Email -->
                                         <div class="mb-3">
                                             <label class="form-label" for="email">
@@ -351,18 +403,19 @@ $initial = strtoupper(substr($userLogin['email'], 0, 1));
         </div>
     </div>
 
+    <script src="js/bootstrap.bundle.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js"></script>
     <script>
-        // Toggle show/hide password
+        // Tombol tampil/sembunyikan password
         document.getElementById('togglePassword').addEventListener('click', function() {
             const input = document.getElementById('password');
             const icon = document.getElementById('eyeIcon');
             if (input.type === 'password') {
                 input.type = 'text';
-                icon.classList.replace('ti-eye', 'ti-eye-off');
+                icon.classList.replace('ti-eye-off', 'ti-eye');
             } else {
                 input.type = 'password';
-                icon.classList.replace('ti-eye-off', 'ti-eye');
+                icon.classList.replace('ti-eye', 'ti-eye-off');
             }
         });
     </script>

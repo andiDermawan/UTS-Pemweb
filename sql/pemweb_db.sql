@@ -68,7 +68,8 @@ CREATE TABLE `user_tbl` (
 
 INSERT INTO `user_tbl` (`userid`, `email`, `password`, `prodi_id`) VALUES
 (1, 'ayam@gmail.com', '$2y$10$A1nt7/IGXQ7Jpfn0kxvPFexTiB/LNgEBS893o6zQjgdoA.HuV/dZy', 4),
-(2, 'kicau@gmail.com', '$2y$10$0W2xeVL7XP8UAF2zIIKnleVzI67G9HJ6pXrivX9p6ZhTlZeeDJ1XK', 2);
+(2, 'kicau@gmail.com', '$2y$10$0W2xeVL7XP8UAF2zIIKnleVzI67G9HJ6pXrivX9p6ZhTlZeeDJ1XK', 2),
+(3, 'auffacs12@gmail.com', '$2b$12$nFI4.7/33P7rvSmCqx7sAu1Wg6tn5TheHc6Wz69zpzkwfxadJDHkq', 1);
 
 --
 -- Indexes for dumped tables
