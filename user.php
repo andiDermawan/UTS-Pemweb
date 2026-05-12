@@ -67,6 +67,9 @@ if ($aksi === 'tambah' && $_SERVER['REQUEST_METHOD'] === 'POST') {
   } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $pesan = 'Format email tidak valid.';
     $jenisP = 'error';
+  } elseif (strlen($password) < 8) {         
+    $pesan  = 'Password minimal 8 karakter.';
+    $jenisP = 'error';
   } else {
     try {
       $hash = password_hash($password, PASSWORD_DEFAULT);
@@ -98,10 +101,9 @@ if ($aksi === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $jenisP = 'error';
   } else {
     try {
-      if (!empty($password)) {
-        $hash = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $pdo->prepare("UPDATE user_tbl SET email=?, password=?, prodi_id=? WHERE userid=?");
-        $stmt->execute([$email, $hash, $prodi_id, $userid]);
+      if (!empty($password) && strlen($password) < 8) {
+        $pesan  = 'Password minimal 8 karakter.';
+        $jenisP = 'error';
       } else {
         $stmt = $pdo->prepare("UPDATE user_tbl SET email=?, prodi_id=? WHERE userid=?");
         $stmt->execute([$email, $prodi_id, $userid]);
