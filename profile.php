@@ -412,7 +412,7 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
     </div>
 
     <script src="js/bootstrap.bundle.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js"></script>
+    <script src="js/tabler.min.js"></script>
     <script>
         // Tombol tampil/sembunyikan password
         document.getElementById('togglePassword').addEventListener('click', function () {

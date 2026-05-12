@@ -77,7 +77,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <?php
             if (isset($_SESSION['flash_message'])) {
                 echo $_SESSION['flash_message'];
-
                 unset($_SESSION['flash_message']);
             }
             ?>
@@ -130,7 +129,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js"></script>
+    <script src="js/tabler.min.js"></script>
 </body>
 
 </html>

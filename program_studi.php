@@ -526,7 +526,7 @@ $prodis = $stmt->fetchAll();
     </div>
 
     <script src="js/bootstrap.bundle.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js"></script>
+    <script src="js/tabler.min.js"></script>
     <script>
         function setEditData(prodiId, prodiName) {
             document.getElementById('editProdiId').value = prodiId;

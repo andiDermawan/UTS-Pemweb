@@ -291,7 +291,7 @@ $counts = array_map(function ($r) {
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="js/bootstrap.bundle.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js"></script>
+    <script src="js/tabler.min.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
