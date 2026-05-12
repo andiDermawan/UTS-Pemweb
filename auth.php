@@ -1,6 +1,22 @@
 <?php
-// Middleware Autentikasi & Otorisasi
 session_start();
+
+$isDirectAccess = false;
+if (isset($_SERVER['SCRIPT_FILENAME'])) {
+    $isDirectAccess = (realpath($_SERVER['SCRIPT_FILENAME']) === realpath(__FILE__));
+} elseif (isset($_SERVER['SCRIPT_NAME'])) {
+    $isDirectAccess = (basename($_SERVER['SCRIPT_NAME']) === basename(__FILE__));
+}
+
+if ($isDirectAccess) {
+    if (isset($_SESSION['user_id'])) {
+        header('Location: dashboard.php');
+        exit;
+    }
+
+    header('Location: index.php');
+    exit;
+}
 
 // Cek apakah user sudah login
 if (!isset($_SESSION['user_id'])) {
