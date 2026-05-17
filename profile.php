@@ -23,37 +23,60 @@ $prodiList = $pdo->query("SELECT prodi_id, nama_prodi FROM prodi_tbl ORDER BY na
 $success_message = '';
 $error_message = '';
 
-// Menangani submit form
+// Menangani submit form (email tidak bisa diubah)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $new_email = trim($_POST['email'] ?? '');
     $new_prodi_id = !empty($_POST['prodi_id']) ? (int) $_POST['prodi_id'] : null;
     $new_password = $_POST['password'] ?? '';
+    $old_password = $_POST['old_password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
-
-    // Validasi email
-    if (empty($new_email) || !filter_var($new_email, FILTER_VALIDATE_EMAIL)) {
-        $error_message = "Format email tidak valid!";
-    }
-    // Cek email sudah dipakai user lain
-    elseif ($new_email !== $userLogin['email']) {
-        $cek = $pdo->prepare("SELECT userid FROM user_tbl WHERE email = ? AND userid != ?");
-        $cek->execute([$new_email, $_SESSION['user_id']]);
-        if ($cek->fetch()) {
-            $error_message = "Email sudah digunakan oleh user lain!";
+    
+    // Logika Upload Foto Profil
+    $foto_profil_name = $userLogin['foto_profil']; // Default ke foto lama
+    if (isset($_FILES['foto_profil']) && $_FILES['foto_profil']['error'] === UPLOAD_ERR_OK) {
+        $file_tmp = $_FILES['foto_profil']['tmp_name'];
+        $file_name = $_FILES['foto_profil']['name'];
+        $file_size = $_FILES['foto_profil']['size'];
+        $file_type = mime_content_type($file_tmp);
+        
+        $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+        $max_size = 2 * 1024 * 1024; // 2MB
+        
+        if (!in_array($file_type, $allowed_types)) {
+            $error_message = "Tipe file tidak diizinkan. Hanya JPG, PNG, dan GIF.";
+        } elseif ($file_size > $max_size) {
+            $error_message = "Ukuran file terlalu besar. Maksimal 2MB.";
+        } else {
+            $ext = pathinfo($file_name, PATHINFO_EXTENSION);
+            $new_file_name = $_SESSION['user_id'] . '_' . time() . '.' . $ext;
+            $upload_path = 'uploads/profiles/' . $new_file_name;
+            
+            if (move_uploaded_file($file_tmp, $upload_path)) {
+                // Hapus foto lama jika ada dan bukan default
+                if (!empty($userLogin['foto_profil']) && file_exists('uploads/profiles/' . $userLogin['foto_profil'])) {
+                    unlink('uploads/profiles/' . $userLogin['foto_profil']);
+                }
+                $foto_profil_name = $new_file_name;
+            } else {
+                $error_message = "Gagal mengunggah foto profil.";
+            }
         }
     }
 
     if (empty($error_message)) {
         // Kalau password diisi, validasi dan hash
         if (!empty($new_password)) {
-            if (strlen($new_password) < 8) {
+            if (empty($old_password)) {
+                $error_message = "Password lama harus diisi jika ingin mengubah password!";
+            } elseif (!password_verify($old_password, $userLogin['password'])) {
+                $error_message = "Password lama salah!";
+            } elseif (strlen($new_password) < 8) {
                 $error_message = "Password minimal 8 karakter!";
             } elseif ($new_password !== $confirm_password) {
                 $error_message = "Konfirmasi password tidak cocok!";
             } else {
                 $hashed = password_hash($new_password, PASSWORD_DEFAULT);
-                $update = $pdo->prepare("UPDATE user_tbl SET email = ?, password = ?, prodi_id = ? WHERE userid = ?");
-                $update->execute([$new_email, $hashed, $new_prodi_id, $_SESSION['user_id']]);
+                $update = $pdo->prepare("UPDATE user_tbl SET password = ?, prodi_id = ?, foto_profil = ? WHERE userid = ?");
+                $update->execute([$hashed, $new_prodi_id, $foto_profil_name, $_SESSION['user_id']]);
 
                 // Paksa logout dan minta login ulang setelah ganti password
                 $_SESSION['flash_message'] = '
@@ -78,15 +101,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
             }
         } else {
-            // Update tanpa ubah password
-            $update = $pdo->prepare("UPDATE user_tbl SET email = ?, prodi_id = ? WHERE userid = ?");
-            $update->execute([$new_email, $new_prodi_id, $_SESSION['user_id']]);
+            // Update hanya prodi dan foto (tanpa ubah password)
+            $update = $pdo->prepare("UPDATE user_tbl SET prodi_id = ?, foto_profil = ? WHERE userid = ?");
+            $update->execute([$new_prodi_id, $foto_profil_name, $_SESSION['user_id']]);
             $success_message = "Profil berhasil diperbarui.";
         }
 
         if (empty($error_message)) {
             // Refresh data setelah update
-            $_SESSION['email'] = $new_email;
             $stmt = $pdo->prepare("SELECT u.*, p.nama_prodi FROM user_tbl u LEFT JOIN prodi_tbl p ON u.prodi_id = p.prodi_id WHERE u.userid = ?");
             $stmt->execute([$_SESSION['user_id']]);
             $userLogin = $stmt->fetch();
@@ -95,10 +117,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $initial = strtoupper(substr($userLogin['email'], 0, 1));
-// Path gambar profil default (path web)
-$profileImgPath = 'images/profile.png';
-// Cek file di filesystem relatif ke script ini
-$hasProfileImg = is_file(__DIR__ . '/images/profile.png');
+// Cek foto profil dari database
+$hasProfileImg = false;
+$profileImgPath = '';
+if (!empty($userLogin['foto_profil']) && file_exists('uploads/profiles/' . $userLogin['foto_profil'])) {
+    $hasProfileImg = true;
+    $profileImgPath = 'uploads/profiles/' . $userLogin['foto_profil'];
+} else if (is_file(__DIR__ . '/images/profile.png')) { // Fallback ke default gambar
+    $hasProfileImg = true;
+    $profileImgPath = 'images/profile.png';
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -299,8 +327,8 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
                                         <?= htmlspecialchars($userLogin['nama_prodi'] ?? 'Belum ada program studi') ?>
                                     </div>
                                     <div class="mt-2">
-                                        <span class="badge bg-blue-lt">
-                                            <i class="ti ti-id me-1"></i>ID: <?= $userLogin['userid'] ?>
+                                        <span class="badge bg-blue-lt" title="<?= htmlspecialchars($userLogin['userid']) ?>">
+                                            <i class="ti ti-fingerprint me-1"></i>UUID: <?= substr($userLogin['userid'], 0, 8) ?>…
                                         </span>
                                     </div>
                                 </div>
@@ -314,18 +342,27 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
                                     </h3>
                                 </div>
                                 <div class="card-body">
-                                    <form method="POST" action="">
-                                        <!-- Email -->
+                                    <form method="POST" action="" enctype="multipart/form-data">
+                                        
+                                        <!-- Foto Profil -->
+                                        <div class="mb-3">
+                                            <label class="form-label" for="foto_profil">Foto Profil</label>
+                                            <input type="file" class="form-control" id="foto_profil" name="foto_profil" accept="image/png, image/jpeg, image/gif">
+                                            <small class="form-hint">Format yang diizinkan: JPG, PNG, GIF. Maksimal 2MB.</small>
+                                        </div>
+
+                                        <!-- Email (Read-only) -->
                                         <div class="mb-3">
                                             <label class="form-label" for="email">
-                                                Email <span class="text-danger">*</span>
+                                                Email
+                                                <span class="badge bg-muted-lt ms-1"><i class="ti ti-lock-filled me-1"></i>Tidak dapat diubah</span>
                                             </label>
                                             <div class="input-group">
                                                 <span class="input-group-text">
                                                     <i class="ti ti-mail"></i>
                                                 </span>
-                                                <input type="email" class="form-control" id="email" name="email"
-                                                    value="<?= htmlspecialchars($userLogin['email']) ?>" required>
+                                                <input type="email" class="form-control" id="email"
+                                                    value="<?= htmlspecialchars($userLogin['email']) ?>" disabled readonly>
                                             </div>
                                         </div>
 
@@ -354,12 +391,24 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
                                             Kosongkan field password jika tidak ingin mengubah password.
                                         </p>
 
+                                        <!-- Password Lama -->
+                                        <div class="mb-3">
+                                            <label class="form-label" for="old_password">Password Lama</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">
+                                                    <i class="ti ti-lock"></i>
+                                                </span>
+                                                <input type="password" class="form-control" id="old_password"
+                                                    name="old_password" placeholder="Masukkan password saat ini jika ingin mengubah">
+                                            </div>
+                                        </div>
+
                                         <!-- Password Baru -->
                                         <div class="mb-3">
                                             <label class="form-label" for="password">Password Baru</label>
                                             <div class="input-group">
                                                 <span class="input-group-text">
-                                                    <i class="ti ti-lock"></i>
+                                                    <i class="ti ti-lock-plus"></i>
                                                 </span>
                                                 <input type="password" class="form-control" id="password"
                                                     name="password" placeholder="Min. 8 karakter" minlength="8">
@@ -411,8 +460,8 @@ $hasProfileImg = is_file(__DIR__ . '/images/profile.png');
         </div>
     </div>
 
-    <script src="js/bootstrap.bundle.js"></script>
-    <script src="js/tabler.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js"></script>
     <script>
         // Tombol tampil/sembunyikan password
         document.getElementById('togglePassword').addEventListener('click', function () {
