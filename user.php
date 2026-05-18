@@ -99,6 +99,13 @@ if ($aksi === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 // ---------- HAPUS ----------
 if ($aksi === 'hapus' && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['userid'])) {
   $userid = trim($_POST['userid']);
+  if (isset($_SESSION['user_id']) && $userid === $_SESSION['user_id']) {
+    $_SESSION['pesan'] = 'Akun yang sedang login tidak dapat dihapus dari halaman User.';
+    $_SESSION['jenisP'] = 'error';
+    header("Location: user.php");
+    exit;
+  }
+
   $stmt = $pdo->prepare("DELETE FROM user_tbl WHERE userid=?");
   $stmt->execute([$userid]);
   $_SESSION['pesan'] = 'User berhasil dihapus.';
@@ -139,8 +146,8 @@ if ($search !== '') {
 $users = $stmt->fetchAll();
 
 $currentPage = 'user';
-$profileImgPath = 'images/profile.png';
-$hasProfileImg = is_file(__DIR__ . '/images/profile.png');
+$defaultProfileImg = 'images/profile.png';
+$hasDefaultProfileImg = is_file(__DIR__ . '/images/profile.png');
 
 // Helper for sort URL
 function sortUrl($field, $currentSort, $search)
@@ -368,6 +375,12 @@ function sortIcon($field, $currentSort)
                       $colors = ['bg-blue', 'bg-azure', 'bg-indigo', 'bg-purple', 'bg-pink', 'bg-red', 'bg-orange', 'bg-teal', 'bg-green', 'bg-cyan'];
                       $avatarColor = $colors[$no % count($colors)];
                       $initial = strtoupper(substr($u['email'], 0, 1));
+                      $isCurrentUser = isset($_SESSION['user_id']) && $u['userid'] === $_SESSION['user_id'];
+                      $profileImgPath = '';
+                      $hasProfileImg = !empty($u['foto_profil']) && is_file(__DIR__ . '/uploads/profiles/' . $u['foto_profil']);
+                      if ($hasProfileImg) {
+                        $profileImgPath = 'uploads/profiles/' . $u['foto_profil'];
+                      }
                       ?>
                       <tr>
                         <td class="text-center text-muted"><small><?= str_pad($no + 1, 3, '0', STR_PAD_LEFT) ?></small></td>
@@ -375,6 +388,9 @@ function sortIcon($field, $currentSort)
                           <div class="d-flex align-items-center gap-2">
                             <?php if ($hasProfileImg): ?>
                               <img src="<?= htmlspecialchars($profileImgPath) ?>" alt="Profile"
+                                class="avatar avatar-sm rounded-circle" style="width:32px;height:32px;object-fit:cover;">
+                            <?php elseif ($hasDefaultProfileImg): ?>
+                              <img src="<?= htmlspecialchars($defaultProfileImg) ?>" alt="Profile"
                                 class="avatar avatar-sm rounded-circle" style="width:32px;height:32px;object-fit:cover;">
                             <?php else: ?>
                               <span
@@ -398,6 +414,7 @@ function sortIcon($field, $currentSort)
                               <i class="ti ti-edit me-1"></i>Edit
                             </button>
                             <button class="btn btn-sm btn-danger" title="Hapus"
+                              <?= $isCurrentUser ? 'disabled aria-disabled="true" title="Akun yang sedang login tidak dapat dihapus"' : '' ?>
                               onclick='konfirmHapus(<?= json_encode($u['userid']) ?>, <?= json_encode($u['email']) ?>)'>
                               <i class="ti ti-trash me-1"></i>Hapus
                             </button>
