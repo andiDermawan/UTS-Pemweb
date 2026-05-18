@@ -113,6 +113,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($error_message)) {
+        // Pastikan program studi dipilih (tidak boleh null karena constraint DB)
+        if ($new_prodi_id === null) {
+            $error_message = "Program Studi wajib dipilih.";
+        }
         // Kalau password diisi, validasi dan hash
         if (!empty($new_password)) {
             if (empty($old_password)) {
@@ -129,8 +133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $update->execute([$hashed, $new_prodi_id, $foto_profil_name, $_SESSION['user_id']]);
 
                 // Paksa logout dan minta login ulang setelah ganti password
-                $_SESSION['flash_message'] = '
-                <div class="alert alert-success alert-important" role="alert">
+                $_SESSION['flash_message'] = '<div class="alert alert-success alert-important" role="alert">
                     <div class="d-flex align-items-center">
                         <div class="me-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon me-0" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -435,13 +438,13 @@ if (!empty($userLogin['foto_profil']) && file_exists('uploads/profiles/' . $user
 
                                         <!-- Program Studi -->
                                         <div class="mb-3">
-                                            <label class="form-label" for="prodi_id">Program Studi</label>
+                                            <label class="form-label required" for="prodi_id">Program Studi</label>
                                             <div class="input-group">
                                                 <span class="input-group-text">
                                                     <i class="ti ti-building-community"></i>
                                                 </span>
-                                                <select class="form-select" id="prodi_id" name="prodi_id">
-                                                    <option value="">— Tidak ada —</option>
+                                                <select class="form-select" id="prodi_id" name="prodi_id" required>
+                                                    <option value="">— Pilih Program Studi —</option>
                                                     <?php foreach ($prodiList as $prodi): ?>
                                                         <option value="<?= $prodi['prodi_id'] ?>"
                                                             <?= $userLogin['prodi_id'] == $prodi['prodi_id'] ? 'selected' : '' ?>>

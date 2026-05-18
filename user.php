@@ -63,7 +63,6 @@ if ($aksi === 'tambah' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 if ($aksi === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
   $userid = trim($_POST['userid'] ?? '');
   $email = trim($_POST['email'] ?? '');
-  $password = $_POST['password'] ?? '';
   $prodi_id = !empty($_POST['prodi_id']) ? (int) $_POST['prodi_id'] : null;
 
   if ($email === '') {
@@ -77,18 +76,14 @@ if ($aksi === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $jenisP = 'error';
   } else {
     try {
-      if (!empty($password) && strlen($password) < 8) {
-        $pesan = 'Password minimal 8 karakter.';
+      // Disallow password changes from the user management page. Password must be changed in Profile.
+      if (isset($_POST['password']) && $_POST['password'] !== '') {
+        $pesan = 'Password tidak dapat diubah dari halaman User. Gunakan halaman Profile.';
         $jenisP = 'error';
       } else {
-        if (!empty($password)) {
-          $hash = password_hash($password, PASSWORD_DEFAULT);
-          $stmt = $pdo->prepare("UPDATE user_tbl SET email=?, password=?, prodi_id=? WHERE userid=?");
-          $stmt->execute([$email, $hash, $prodi_id, $userid]);
-        } else {
-          $stmt = $pdo->prepare("UPDATE user_tbl SET email=?, prodi_id=? WHERE userid=?");
-          $stmt->execute([$email, $prodi_id, $userid]);
-        }
+        $stmt = $pdo->prepare("UPDATE user_tbl SET email=?, prodi_id=? WHERE userid=?");
+        $stmt->execute([$email, $prodi_id, $userid]);
+
         $_SESSION['pesan'] = "User <strong>$email</strong> berhasil diperbarui.";
         $_SESSION['jenisP'] = 'sukses';
         header("Location: user.php");
@@ -507,11 +502,7 @@ function sortIcon($field, $currentSort)
               </div>
             </div>
             <div class="mb-3">
-              <label class="form-label">Password <span class="form-hint">Kosongkan jika tidak diubah</span></label>
-              <div class="input-group">
-                <span class="input-group-text"><i class="ti ti-lock"></i></span>
-                <input type="password" name="password" class="form-control" placeholder="••••••••">
-              </div>
+              <div class="form-text text-muted small">Password hanya dapat diubah melalui halaman Profile oleh pemilik akun.</div>
             </div>
             <div class="mb-3">
               <label class="form-label required">Program Studi</label>
