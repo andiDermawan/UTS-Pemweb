@@ -423,8 +423,6 @@ if (!empty($userLogin['foto_profil']) && file_exists('uploads/profiles/' . $user
                                         <div class="mb-3">
                                             <label class="form-label" for="email">
                                                 Email
-                                                <span class="badge bg-muted-lt ms-1"><i
-                                                        class="ti ti-lock-filled me-1"></i>Tidak dapat diubah</span>
                                             </label>
                                             <div class="input-group">
                                                 <span class="input-group-text">
@@ -535,7 +533,7 @@ if (!empty($userLogin['foto_profil']) && file_exists('uploads/profiles/' . $user
     <script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js"></script>
     <script>
         // Tombol tampil/sembunyikan password
-        document.getElementById('togglePassword').addEventListener('click', function () {
+        document.getElementById('togglePassword').addEventListener('click', function() {
             const input = document.getElementById('password');
             const icon = document.getElementById('eyeIcon');
             if (input.type === 'password') {
@@ -549,7 +547,7 @@ if (!empty($userLogin['foto_profil']) && file_exists('uploads/profiles/' . $user
     </script>
     <script>
         // Copy UUID to clipboard
-        document.getElementById('copyUuidBtn')?.addEventListener('click', function () {
+        document.getElementById('copyUuidBtn')?.addEventListener('click', function() {
             const uuid = this.getAttribute('data-uuid') || '';
             if (!uuid) return;
             if (navigator.clipboard) {
@@ -566,7 +564,9 @@ if (!empty($userLogin['foto_profil']) && file_exists('uploads/profiles/' . $user
                 ta.value = uuid;
                 document.body.appendChild(ta);
                 ta.select();
-                try { document.execCommand('copy'); } catch (e) { }
+                try {
+                    document.execCommand('copy');
+                } catch (e) {}
                 document.body.removeChild(ta);
             }
         });
