@@ -393,11 +393,11 @@ function sortIcon($field, $currentSort)
                         <td>
                           <div class="btn-list flex-nowrap">
                             <button class="btn btn-sm btn-warning" title="Edit"
-                              onclick="setEditUser(<?= $u['userid'] ?>, '<?= htmlspecialchars(addslashes($u['email'])) ?>', '<?= $u['prodi_id'] ?? '' ?>')">
+                              onclick='setEditUser(<?= json_encode($u['userid']) ?>, <?= json_encode($u['email']) ?>, <?= json_encode($u['prodi_id'] ?? '') ?>)'>
                               <i class="ti ti-edit me-1"></i>Edit
                             </button>
                             <button class="btn btn-sm btn-danger" title="Hapus"
-                              onclick="konfirmHapus(<?= $u['userid'] ?>, '<?= htmlspecialchars(addslashes($u['email'])) ?>')">
+                              onclick='konfirmHapus(<?= json_encode($u['userid']) ?>, <?= json_encode($u['email']) ?>)'>
                               <i class="ti ti-trash me-1"></i>Hapus
                             </button>
                           </div>
