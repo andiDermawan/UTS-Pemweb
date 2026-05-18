@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 // Pengaman: config.php ditujukan untuk di-include, bukan diakses langsung lewat URL.
 // Jika diakses langsung, selalu redirect ke halaman login.
 

@@ -29,35 +29,85 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $new_password = $_POST['password'] ?? '';
     $old_password = $_POST['old_password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
-    
+    $isPhotoChanged = false;
+
     // Logika Upload Foto Profil
     $foto_profil_name = $userLogin['foto_profil']; // Default ke foto lama
-    if (isset($_FILES['foto_profil']) && $_FILES['foto_profil']['error'] === UPLOAD_ERR_OK) {
-        $file_tmp = $_FILES['foto_profil']['tmp_name'];
-        $file_name = $_FILES['foto_profil']['name'];
-        $file_size = $_FILES['foto_profil']['size'];
-        $file_type = mime_content_type($file_tmp);
-        
-        $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
-        $max_size = 2 * 1024 * 1024; // 2MB
-        
-        if (!in_array($file_type, $allowed_types)) {
-            $error_message = "Tipe file tidak diizinkan. Hanya JPG, PNG, dan GIF.";
-        } elseif ($file_size > $max_size) {
-            $error_message = "Ukuran file terlalu besar. Maksimal 2MB.";
+    if (isset($_FILES['foto_profil']) && !empty($_FILES['foto_profil']['name'])) {
+        if ($_FILES['foto_profil']['error'] !== UPLOAD_ERR_OK) {
+            switch ($_FILES['foto_profil']['error']) {
+                case UPLOAD_ERR_INI_SIZE:
+                case UPLOAD_ERR_FORM_SIZE:
+                    $error_message = "Ukuran file melebihi batas upload server, harus kurang dari atau sama dengan 5mb.";
+                    break;
+                case UPLOAD_ERR_PARTIAL:
+                    $error_message = "File terunggah sebagian. Silakan coba lagi.";
+                    break;
+                case UPLOAD_ERR_NO_TMP_DIR:
+                    $error_message = "Folder sementara upload tidak tersedia di server.";
+                    break;
+                case UPLOAD_ERR_CANT_WRITE:
+                    $error_message = "Server gagal menyimpan file upload.";
+                    break;
+                case UPLOAD_ERR_EXTENSION:
+                    $error_message = "Upload diblokir oleh konfigurasi ekstensi server.";
+                    break;
+                default:
+                    $error_message = "Terjadi kesalahan saat upload foto profil.";
+                    break;
+            }
         } else {
-            $ext = pathinfo($file_name, PATHINFO_EXTENSION);
-            $new_file_name = $_SESSION['user_id'] . '_' . time() . '.' . $ext;
-            $upload_path = 'uploads/profiles/' . $new_file_name;
-            
-            if (move_uploaded_file($file_tmp, $upload_path)) {
-                // Hapus foto lama jika ada dan bukan default
-                if (!empty($userLogin['foto_profil']) && file_exists('uploads/profiles/' . $userLogin['foto_profil'])) {
-                    unlink('uploads/profiles/' . $userLogin['foto_profil']);
+            $file_tmp = $_FILES['foto_profil']['tmp_name'];
+            $file_name = $_FILES['foto_profil']['name'];
+            $file_size = $_FILES['foto_profil']['size'];
+            $file_type = '';
+            if (function_exists('finfo_open')) {
+                $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                if ($finfo !== false) {
+                    $detected = finfo_file($finfo, $file_tmp);
+                    if ($detected !== false) {
+                        $file_type = $detected;
+                    }
+                    finfo_close($finfo);
                 }
-                $foto_profil_name = $new_file_name;
+            } elseif (function_exists('mime_content_type')) {
+                $detected = mime_content_type($file_tmp);
+                if ($detected !== false) {
+                    $file_type = $detected;
+                }
             } else {
-                $error_message = "Gagal mengunggah foto profil.";
+                $image_info = @getimagesize($file_tmp);
+                if ($image_info !== false && isset($image_info['mime'])) {
+                    $file_type = $image_info['mime'];
+                }
+            }
+
+            $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+            $max_size = 5 * 1024 * 1024; // max file size
+
+            if (!in_array($file_type, $allowed_types, true)) {
+                $error_message = "Tipe file tidak diizinkan. Hanya JPG, PNG, dan GIF.";
+            } elseif ($file_size > $max_size) {
+                $error_message = "Ukuran file terlalu besar. Maksimal 2MB.";
+            } else {
+                $ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+                if ($ext === '') {
+                    $ext = 'jpg';
+                }
+
+                $new_file_name = $_SESSION['user_id'] . '_' . time() . '.' . $ext;
+                $upload_path = 'uploads/profiles/' . $new_file_name;
+
+                if (move_uploaded_file($file_tmp, $upload_path)) {
+                    // Hapus foto lama jika ada dan bukan default
+                    if (!empty($userLogin['foto_profil']) && file_exists('uploads/profiles/' . $userLogin['foto_profil'])) {
+                        unlink('uploads/profiles/' . $userLogin['foto_profil']);
+                    }
+                    $foto_profil_name = $new_file_name;
+                    $isPhotoChanged = true;
+                } else {
+                    $error_message = "Gagal mengunggah foto profil.";
+                }
             }
         }
     }
@@ -102,9 +152,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } else {
             // Update hanya prodi dan foto (tanpa ubah password)
-            $update = $pdo->prepare("UPDATE user_tbl SET prodi_id = ?, foto_profil = ? WHERE userid = ?");
-            $update->execute([$new_prodi_id, $foto_profil_name, $_SESSION['user_id']]);
-            $success_message = "Profil berhasil diperbarui.";
+            $isProdiChanged = ((string) ($userLogin['prodi_id'] ?? '') !== (string) ($new_prodi_id ?? ''));
+
+            if ($isProdiChanged || $isPhotoChanged) {
+                $update = $pdo->prepare("UPDATE user_tbl SET prodi_id = ?, foto_profil = ? WHERE userid = ?");
+                $update->execute([$new_prodi_id, $foto_profil_name, $_SESSION['user_id']]);
+                $success_message = "Profil berhasil diperbarui.";
+            } else {
+                $error_message = "Tidak ada perubahan yang disimpan.";
+            }
         }
 
         if (empty($error_message)) {
@@ -326,10 +382,17 @@ if (!empty($userLogin['foto_profil']) && file_exists('uploads/profiles/' . $user
                                         <i class="ti ti-building-community me-1"></i>
                                         <?= htmlspecialchars($userLogin['nama_prodi'] ?? 'Belum ada program studi') ?>
                                     </div>
-                                    <div class="mt-2">
-                                        <span class="badge bg-blue-lt" title="<?= htmlspecialchars($userLogin['userid']) ?>">
-                                            <i class="ti ti-fingerprint me-1"></i>UUID: <?= substr($userLogin['userid'], 0, 8) ?>…
+                                    <div class="mt-2 d-flex align-items-center justify-content-center">
+                                        <span class="badge bg-blue-lt"
+                                            title="<?= htmlspecialchars($userLogin['userid']) ?>">
+                                            <i class="ti ti-fingerprint me-1"></i>UUID:
+                                            <?= htmlspecialchars($userLogin['userid']) ?>
                                         </span>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary ms-2"
+                                            id="copyUuidBtn" data-uuid="<?= htmlspecialchars($userLogin['userid']) ?>"
+                                            aria-label="Copy UUID">
+                                            <i class="ti ti-copy"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -343,26 +406,30 @@ if (!empty($userLogin['foto_profil']) && file_exists('uploads/profiles/' . $user
                                 </div>
                                 <div class="card-body">
                                     <form method="POST" action="" enctype="multipart/form-data">
-                                        
+
                                         <!-- Foto Profil -->
                                         <div class="mb-3">
                                             <label class="form-label" for="foto_profil">Foto Profil</label>
-                                            <input type="file" class="form-control" id="foto_profil" name="foto_profil" accept="image/png, image/jpeg, image/gif">
-                                            <small class="form-hint">Format yang diizinkan: JPG, PNG, GIF. Maksimal 2MB.</small>
+                                            <input type="file" class="form-control" id="foto_profil" name="foto_profil"
+                                                accept="image/png, image/jpeg, image/gif">
+                                            <small class="form-hint">Format yang diizinkan: JPG, PNG, GIF. Maksimal
+                                                2MB.</small>
                                         </div>
 
                                         <!-- Email (Read-only) -->
                                         <div class="mb-3">
                                             <label class="form-label" for="email">
                                                 Email
-                                                <span class="badge bg-muted-lt ms-1"><i class="ti ti-lock-filled me-1"></i>Tidak dapat diubah</span>
+                                                <span class="badge bg-muted-lt ms-1"><i
+                                                        class="ti ti-lock-filled me-1"></i>Tidak dapat diubah</span>
                                             </label>
                                             <div class="input-group">
                                                 <span class="input-group-text">
                                                     <i class="ti ti-mail"></i>
                                                 </span>
                                                 <input type="email" class="form-control" id="email"
-                                                    value="<?= htmlspecialchars($userLogin['email']) ?>" disabled readonly>
+                                                    value="<?= htmlspecialchars($userLogin['email']) ?>" disabled
+                                                    readonly>
                                             </div>
                                         </div>
 
@@ -399,7 +466,8 @@ if (!empty($userLogin['foto_profil']) && file_exists('uploads/profiles/' . $user
                                                     <i class="ti ti-lock"></i>
                                                 </span>
                                                 <input type="password" class="form-control" id="old_password"
-                                                    name="old_password" placeholder="Masukkan password saat ini jika ingin mengubah">
+                                                    name="old_password"
+                                                    placeholder="Masukkan password saat ini jika ingin mengubah password">
                                             </div>
                                         </div>
 
@@ -473,6 +541,30 @@ if (!empty($userLogin['foto_profil']) && file_exists('uploads/profiles/' . $user
             } else {
                 input.type = 'password';
                 icon.classList.replace('ti-eye', 'ti-eye-off');
+            }
+        });
+    </script>
+    <script>
+        // Copy UUID to clipboard
+        document.getElementById('copyUuidBtn')?.addEventListener('click', function () {
+            const uuid = this.getAttribute('data-uuid') || '';
+            if (!uuid) return;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(uuid).then(() => {
+                    const original = this.innerHTML;
+                    this.innerHTML = '<i class="ti ti-check"></i>';
+                    setTimeout(() => this.innerHTML = original, 1000);
+                }).catch(() => {
+                    // fallthrough: silent
+                });
+            } else {
+                // Fallback for older browsers
+                const ta = document.createElement('textarea');
+                ta.value = uuid;
+                document.body.appendChild(ta);
+                ta.select();
+                try { document.execCommand('copy'); } catch (e) { }
+                document.body.removeChild(ta);
             }
         });
     </script>
