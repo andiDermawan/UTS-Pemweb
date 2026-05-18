@@ -61,7 +61,7 @@ CREATE TABLE `user_tbl` (
   `email` varchar(150) NOT NULL,
   `password` varchar(255) NOT NULL,
   `foto_profil` varchar(255) DEFAULT NULL,
-  `prodi_id` int(11) DEFAULT NULL
+  `prodi_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -69,9 +69,7 @@ CREATE TABLE `user_tbl` (
 --
 
 INSERT INTO `user_tbl` (`userid`, `email`, `password`, `foto_profil`, `prodi_id`) VALUES
-('a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d', 'ayam@gmail.com', '$2y$10$A1nt7/IGXQ7Jpfn0kxvPFexTiB/LNgEBS893o6zQjgdoA.HuV/dZy', NULL, 4),
-('b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e', 'kicau@gmail.com', '$2y$10$0W2xeVL7XP8UAF2zIIKnleVzI67G9HJ6pXrivX9p6ZhTlZeeDJ1XK', NULL, 2),
-('c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f', 'auffacs12@gmail.com', '$2b$12$nFI4.7/33P7rvSmCqx7sAu1Wg6tn5TheHc6Wz69zpzkwfxadJDHkq', NULL, 1);
+('961f46e5-f769-47c5-abac-396234b2ebe0', 'admin123@gmail.com', '$2y$12$InAqIVqboPncYG7QXmKtSO4tDyy1HqjiDbb66JPYRA4KbNsKojEyS', NULL, 1);
 
 --
 -- Indexes for dumped tables
@@ -102,7 +100,7 @@ ALTER TABLE `prodi_tbl`
 -- Ketidakleluasaan untuk tabel `user_tbl`
 --
 ALTER TABLE `user_tbl`
-  ADD CONSTRAINT `user_tbl_ibfk_1` FOREIGN KEY (`prodi_id`) REFERENCES `prodi_tbl` (`prodi_id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `user_tbl_ibfk_1` FOREIGN KEY (`prodi_id`) REFERENCES `prodi_tbl` (`prodi_id`) ON DELETE RESTRICT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

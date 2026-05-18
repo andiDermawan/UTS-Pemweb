@@ -33,6 +33,9 @@ if ($aksi === 'tambah' && $_SERVER['REQUEST_METHOD'] === 'POST') {
   if ($email === '' || $password === '') {
     $pesan = 'Email dan Password wajib diisi.';
     $jenisP = 'error';
+  } elseif ($prodi_id === null) {
+    $pesan = 'Program Studi wajib dipilih.';
+    $jenisP = 'error';
   } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $pesan = 'Format email tidak valid.';
     $jenisP = 'error';
@@ -65,6 +68,9 @@ if ($aksi === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
   if ($email === '') {
     $pesan = 'Email wajib diisi.';
+    $jenisP = 'error';
+  } elseif ($prodi_id === null) {
+    $pesan = 'Program Studi wajib dipilih.';
     $jenisP = 'error';
   } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $pesan = 'Format email tidak valid.';
@@ -459,10 +465,10 @@ function sortIcon($field, $currentSort)
               </div>
             </div>
             <div class="mb-3">
-              <label class="form-label">Program Studi</label>
+              <label class="form-label required">Program Studi</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="ti ti-building-community"></i></span>
-                <select name="prodi_id" class="form-select">
+                <select name="prodi_id" class="form-select" required>
                   <option value="">— Pilih Program Studi —</option>
                   <?php foreach ($prodiList as $prodi): ?>
                     <option value="<?= $prodi['prodi_id'] ?>"><?= htmlspecialchars($prodi['nama_prodi']) ?></option>
@@ -508,10 +514,10 @@ function sortIcon($field, $currentSort)
               </div>
             </div>
             <div class="mb-3">
-              <label class="form-label">Program Studi</label>
+              <label class="form-label required">Program Studi</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="ti ti-building-community"></i></span>
-                <select name="prodi_id" id="editUserProdi" class="form-select">
+                <select name="prodi_id" id="editUserProdi" class="form-select" required>
                   <option value="">— Pilih Program Studi —</option>
                   <?php foreach ($prodiList as $prodi): ?>
                     <option value="<?= $prodi['prodi_id'] ?>"><?= htmlspecialchars($prodi['nama_prodi']) ?></option>
