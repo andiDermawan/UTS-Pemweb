@@ -413,7 +413,7 @@ if (!empty($userLogin['foto_profil']) && file_exists('uploads/profiles/' . $user
                                             <input type="file" class="form-control" id="foto_profil" name="foto_profil"
                                                 accept="image/png, image/jpeg, image/gif">
                                             <small class="form-hint">Format yang diizinkan: JPG, PNG, GIF. Maksimal
-                                                2MB.</small>
+                                                5MB.</small>
                                         </div>
 
                                         <!-- Email (Read-only) -->
